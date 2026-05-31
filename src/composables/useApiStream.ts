@@ -1,25 +1,28 @@
-import { ref, onUnmounted } from 'vue'
+import { ref, type Ref, onUnmounted } from 'vue'
 import axios from 'axios'
+
+export type EventHandler<T> = (event: MessageEvent, listRef: Ref<T[]>) => void;
+export type EventHandlers<T> = Record<string, EventHandler<T>>;
 
 /**
  * A highly reusable, generic Vue composable for API interactions and real-time SSE.
  * It is completely independent of "todos" and can be used for any resource type.
  * 
- * @param {string} baseUrl - The base API URL (e.g., http://localhost:7444/api)
- * @param {string} endpoint - The specific resource endpoint (e.g., 'todos', 'users', 'posts')
+ * @param baseUrl - The base API URL (e.g., http://localhost:7444/api)
+ * @param endpoint - The specific resource endpoint (e.g., 'todos', 'users', 'posts')
  */
-export function useApiStream(baseUrl, endpoint) {
-  const dataList = ref([])
-  const error = ref(null)
-  let eventSource = null
+export function useApiStream<T>(baseUrl: string, endpoint: string) {
+  const dataList = ref<T[]>([]) as Ref<T[]>
+  const error = ref<string | null>(null)
+  let eventSource: EventSource | null = null
 
   const resourceUrl = `${baseUrl}/${endpoint}`
 
   // --- STANDARD API ROUTING & FETCHING ---
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     try {
-      const response = await axios.get(resourceUrl)
+      const response = await axios.get<T[]>(resourceUrl)
       dataList.value = response.data
     } catch (err) {
       error.value = `Failed to fetch ${endpoint} data.`
@@ -27,7 +30,7 @@ export function useApiStream(baseUrl, endpoint) {
     }
   }
 
-  const createItem = async (payload) => {
+  const createItem = async (payload: any): Promise<void> => {
     try {
       await axios.post(resourceUrl, payload)
     } catch (err) {
@@ -36,7 +39,7 @@ export function useApiStream(baseUrl, endpoint) {
     }
   }
 
-  const updateItem = async (id, actionPath = '', payload = {}) => {
+  const updateItem = async (id: string | number, actionPath: string = '', payload: any = {}): Promise<void> => {
     try {
       const url = actionPath ? `${resourceUrl}/${id}/${actionPath}` : `${resourceUrl}/${id}`
       await axios.put(url, payload)
@@ -46,7 +49,7 @@ export function useApiStream(baseUrl, endpoint) {
     }
   }
 
-  const deleteItem = async (id) => {
+  const deleteItem = async (id: string | number): Promise<void> => {
     try {
       await axios.delete(`${resourceUrl}/${id}`)
     } catch (err) {
@@ -59,28 +62,29 @@ export function useApiStream(baseUrl, endpoint) {
 
   /**
    * Connects to the SSE stream. 
-   * @param {Object} eventHandlers - A map of event names to handler functions.
-   * Example: { 'TODO_ADDED': (event, dataList) => { ... } }
+   * @param eventHandlers - A map of event names to handler functions.
    */
-  const connectStream = (eventHandlers = {}) => {
+  const connectStream = (eventHandlers: EventHandlers<T> = {}) => {
     fetchData() // Always fetch initial state upon connecting
 
     eventSource = new EventSource(`${resourceUrl}/stream`)
     
     // Generic INIT fallback
-    eventSource.addEventListener('INIT', (event) => {
-      dataList.value = JSON.parse(event.data)
+    eventSource.addEventListener('INIT', (event: MessageEvent) => {
+      dataList.value = JSON.parse(event.data) as T[]
     })
 
     // Register dynamic custom handlers passed from the component
     for (const [eventName, handler] of Object.entries(eventHandlers)) {
-      eventSource.addEventListener(eventName, (event) => handler(event, dataList))
+      eventSource.addEventListener(eventName, (event: Event) => handler(event as MessageEvent, dataList))
     }
 
     // Handle connection drops by automatically attempting to reconnect
-    eventSource.onerror = (err) => {
+    eventSource.onerror = (err: Event) => {
       console.error(`[${endpoint}] Real-Time Connection dropped. Reconnecting...`, err)
-      eventSource.close()
+      if (eventSource) {
+        eventSource.close()
+      }
       setTimeout(() => connectStream(eventHandlers), 5000)
     }
   }
