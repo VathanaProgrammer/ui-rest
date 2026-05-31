@@ -1,6 +1,12 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useApiStream } from './composables/useApiStream'
+<script setup lang="ts">
+import { ref, onMounted, type Ref } from 'vue'
+import { useApiStream, type EventHandlers } from './composables/useApiStream'
+
+interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+}
 
 // Define the backend URL based on the environment
 const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7444/api'
@@ -12,16 +18,16 @@ const {
   createItem, 
   updateItem, 
   connectStream 
-} = useApiStream(baseUrl, 'todos')
+} = useApiStream<Todo>(baseUrl, 'todos')
 
 // Define the specific SSE event listeners for Todos
-const eventHandlers = {
-  'TODO_ADDED': (event, listRef) => {
-    const newTodo = JSON.parse(event.data)
+const eventHandlers: EventHandlers<Todo> = {
+  'TODO_ADDED': (event: MessageEvent, listRef: Ref<Todo[]>) => {
+    const newTodo = JSON.parse(event.data) as Todo
     listRef.value.push(newTodo)
   },
-  'TODO_UPDATED': (event, listRef) => {
-    const updatedTodo = JSON.parse(event.data)
+  'TODO_UPDATED': (event: MessageEvent, listRef: Ref<Todo[]>) => {
+    const updatedTodo = JSON.parse(event.data) as Todo
     const index = listRef.value.findIndex(t => t.id === updatedTodo.id)
     if (index !== -1) {
       listRef.value[index] = updatedTodo
@@ -45,7 +51,7 @@ const handleAdd = async () => {
 }
 
 // Wrapper to toggle a todo
-const toggleTodo = async (id) => {
+const toggleTodo = async (id: string | number) => {
   await updateItem(id, 'toggle')
 }
 </script>
@@ -53,6 +59,8 @@ const toggleTodo = async (id) => {
 <template>
   <div class="glass-card">
     <h1>✨ Task Master ✨</h1>
+    
+    <div v-if="error" class="error-msg">{{ error }}</div>
     
     <form @submit.prevent="handleAdd" class="input-group">
       <input 
