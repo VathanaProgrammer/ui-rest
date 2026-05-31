@@ -1,12 +1,38 @@
 <script setup>
-import { ref } from 'vue'
-import { useTodos } from './composables/useTodos'
+import { ref, onMounted } from 'vue'
+import { useApiStream } from './composables/useApiStream'
 
 // Define the backend URL based on the environment
 const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7444/api'
 
-// Destructure our powerful, reusable real-time networking logic
-const { todos, error, addTodo, toggleTodo } = useTodos(baseUrl)
+// Initialize the generic composable and point it to the 'todos' endpoint
+const { 
+  dataList: todos, 
+  error, 
+  createItem, 
+  updateItem, 
+  connectStream 
+} = useApiStream(baseUrl, 'todos')
+
+// Define the specific SSE event listeners for Todos
+const eventHandlers = {
+  'TODO_ADDED': (event, listRef) => {
+    const newTodo = JSON.parse(event.data)
+    listRef.value.push(newTodo)
+  },
+  'TODO_UPDATED': (event, listRef) => {
+    const updatedTodo = JSON.parse(event.data)
+    const index = listRef.value.findIndex(t => t.id === updatedTodo.id)
+    if (index !== -1) {
+      listRef.value[index] = updatedTodo
+    }
+  }
+}
+
+// Automatically connect the real-time stream when the component mounts
+onMounted(() => {
+  connectStream(eventHandlers)
+})
 
 // Local UI State
 const newTodoText = ref('')
@@ -14,8 +40,13 @@ const newTodoText = ref('')
 // Wrapper to submit and clear the input field
 const handleAdd = async () => {
   if (!newTodoText.value.trim()) return
-  await addTodo(newTodoText.value)
+  await createItem({ text: newTodoText.value })
   newTodoText.value = ''
+}
+
+// Wrapper to toggle a todo
+const toggleTodo = async (id) => {
+  await updateItem(id, 'toggle')
 }
 </script>
 
