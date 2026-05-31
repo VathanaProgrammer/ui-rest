@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  ui:
+    build: .
+    container_name: ui-rest
+    ports:
+      - "80:80"
+    restart: always
