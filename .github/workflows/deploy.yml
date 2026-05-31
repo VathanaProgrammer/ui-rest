@@ -44,3 +44,32 @@ jobs:
             docker compose down --remove-orphans || true
             docker compose up -d --build
             docker image prune -f
+
+      - name: Send Telegram Notification (Success)
+        uses: appleboy/telegram-action@master
+        if: success()
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ✅ Production Deployment Successful!
+            Application: ui-rest
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.event.head_commit.message }}
+            Actor: ${{ github.actor }}
+
+      - name: Send Telegram Notification (Failure)
+        uses: appleboy/telegram-action@master
+        if: failure()
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ❌ Production Deployment FAILED!
+            Application: ui-rest
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.event.head_commit.message }}
+            Actor: ${{ github.actor }}
+            Please check the GitHub Actions logs immediately!
