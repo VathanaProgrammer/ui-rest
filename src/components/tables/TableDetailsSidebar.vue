@@ -56,7 +56,13 @@ defineEmits(['close']);
         <div>
           <h3 class="text-slate-400 text-xs font-semibold tracking-widest uppercase mb-4">Staff Assigned</h3>
           <div class="bg-[#1e293b] rounded-xl p-3 flex items-center gap-3 border border-slate-700/50">
-            <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400">
+            <img 
+              v-if="table.staffAssigned"
+              :src="`https://i.pravatar.cc/150?u=${table.staffAssigned.name}`" 
+              :alt="table.staffAssigned.name" 
+              class="w-10 h-10 rounded-full border border-slate-600 object-cover" 
+            />
+            <div v-else class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400">
               <User class="w-5 h-5" />
             </div>
             <div>

@@ -23,9 +23,12 @@ const navItems = [
 <template>
   <aside class="w-64 bg-[#0f172a] border-r border-[#1e293b] flex flex-col h-full text-slate-300">
     <!-- User Profile -->
-    <div class="p-6 border-b border-[#1e293b] mb-4">
-      <h2 class="text-white font-semibold text-lg leading-tight">Line Cook Pro</h2>
-      <p class="text-slate-500 text-sm">Station 01</p>
+    <div class="p-6 border-b border-[#1e293b] mb-4 flex items-center gap-3">
+      <img src="https://ui-avatars.com/api/?name=Line+Cook&background=0D8ABC&color=fff&size=64" alt="Staff Profile" class="w-10 h-10 rounded-full border border-slate-700 object-cover" />
+      <div>
+        <h2 class="text-white font-semibold text-base leading-tight">Line Cook Pro</h2>
+        <p class="text-slate-500 text-xs">Station 01</p>
+      </div>
     </div>
 
     <!-- Navigation -->
