@@ -52,9 +52,9 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            🎉 HOLY GUACAMOLE! The Frontend is LIVE! 🥑✨
+            🎉 SUCCESS: The Frontend is LIVE! 🥑✨
             Application: ui-rest
-            Who fixed it?!: Our hero, ${{ github.actor }} 🦸‍♂️
+            Author: ${{ github.actor }} 🦸‍♂️
             Commit: ${{ github.event.head_commit.message }}
             Grab a beer, team! 🍻
 
@@ -65,9 +65,9 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            🚨 MAYDAY! MAYDAY! The Frontend is on FIRE! 🔥😭
+            🚨 FAILURE: The Frontend Deployment Failed! 🔥😭
             Application: ui-rest
-            Who did this?!: It was definitely ${{ github.actor }} 😡
+            Author: ${{ github.actor }} 👀
             Commit: ${{ github.event.head_commit.message }}
-            Fix this mess right now: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Fix this mess: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Coffee is for closers, no coffee for you! ☕🚫
