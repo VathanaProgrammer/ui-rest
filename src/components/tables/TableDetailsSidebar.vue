@@ -28,7 +28,10 @@ defineEmits(['close']);
         <div class="bg-[#1e293b] rounded-xl p-4 flex justify-between items-center border border-slate-700/50">
           <div>
             <div class="text-red-500 font-bold text-2xl mb-1">{{ table.number }}</div>
-            <div class="text-slate-400 text-sm">{{ table.status === 'occupied' ? 'Occupied' : 'Wait' }} • {{ table.guests }} Guests</div>
+            <div class="text-slate-400 text-[13px] leading-relaxed mt-2">
+              <div>Current Guests: {{ table.guests || 0 }} /</div>
+              <div>Max Capacity: {{ table.capacity }}</div>
+            </div>
           </div>
           <div v-if="table.waitTime" class="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-1 rounded">
             {{ table.waitTime }}m

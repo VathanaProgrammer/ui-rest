@@ -12,16 +12,11 @@ export interface Table {
   number: string;
   status: TableStatus;
   guests?: number;
+  capacity: number;
   waitTime?: number; // in minutes
   currentOrder?: OrderItem[];
   staffAssigned?: {
     name: string;
     role: string;
   };
-  // Position properties for the absolute map layout
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  shape?: 'square' | 'circle' | 'rectangle';
 }
