@@ -52,12 +52,11 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            ✅ Production Deployment Successful!
+            🎉 HOLY GUACAMOLE! The Frontend is LIVE! 🥑✨
             Application: ui-rest
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
+            Who fixed it?!: Our hero, ${{ github.actor }} 🦸‍♂️
             Commit: ${{ github.event.head_commit.message }}
-            Actor: ${{ github.actor }}
+            Grab a beer, team! 🍻
 
       - name: Send Telegram Notification (Failure)
         uses: appleboy/telegram-action@master
@@ -66,10 +65,9 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            ❌ Production Deployment FAILED!
+            🚨 MAYDAY! MAYDAY! The Frontend is on FIRE! 🔥😭
             Application: ui-rest
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
+            Who did this?!: It was definitely ${{ github.actor }} 😡
             Commit: ${{ github.event.head_commit.message }}
-            Actor: ${{ github.actor }}
-            View Error Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Fix this mess right now: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Coffee is for closers, no coffee for you! ☕🚫
