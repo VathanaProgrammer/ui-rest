@@ -1,0 +1,3 @@
+ui.learner-teach.online {
+    reverse_proxy ui:80
+}
