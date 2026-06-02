@@ -26,7 +26,7 @@ jobs:
       - name: Copy Files to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: 34.228.16.33
+          host: 3.90.228.110
           username: ubuntu
           key: ${{ secrets.UI_EC2_SSH_KEY }}
           source: "."
@@ -35,7 +35,7 @@ jobs:
       - name: Build and Run with Docker Compose on EC2
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 34.228.16.33
+          host: 3.90.228.110
           username: ubuntu
           key: ${{ secrets.UI_EC2_SSH_KEY }}
           script: |
