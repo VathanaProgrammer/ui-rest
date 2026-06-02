@@ -17,6 +17,7 @@ const navItems = [
   { name: 'KDS', path: '/kds', icon: ChefHat },
   { name: 'Tracking', path: '/tracking', icon: MapPin },
   { name: 'Tables', path: '/tables', icon: Armchair },
+  { name: 'Profile', path: '/profile', icon: Armchair },
 ];
 </script>
 

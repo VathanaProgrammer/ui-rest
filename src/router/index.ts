@@ -20,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'kds',
         name: 'KDS',
-        component: () => import('../views/PlaceholderView.vue'),
+        component: () => import('../components/KDS/kds.vue'),
       },
       {
         path: 'tracking',
