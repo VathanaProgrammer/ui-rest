@@ -61,7 +61,7 @@ jobs:
             📝 Commit: ${{ github.event.head_commit.message }}
             ------------------------------------
             Awesome job, ${{ github.actor }}! The frontend deployment is fully live! 🎉
-          sticker: "CAACAgIAAxkBAAERUwxqIFkagZkp7hv44xv3pB-Fxr8AAdMAAiQ_AAJVA2hIAVvZ-JnLXns7BA"
+          document: "https://media.giphy.com/media/11sBLVxNs7v6WA/giphy.gif"
 
       - name: Send Telegram Notification (Failure)
         uses: appleboy/telegram-action@master
@@ -78,4 +78,4 @@ jobs:
             ------------------------------------
             Hey ${{ github.actor }}, the deployment pipeline failed.
             🔍 Review the logs here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          sticker: "CAACAgEAAxkBAAERUwpqIFj55atsc17CP92HuAQ971hzzAAC5gQAAv5kqUWwl_aWeP3zATsE"
+          document: "https://media.giphy.com/media/T1WqKkLYCbC12/giphy.gif"
