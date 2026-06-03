@@ -1,9 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import DashboardLayout from '../layouts/DashboardLayout.vue';
-// ADD New
-
-
-
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -17,27 +13,34 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Tables',
         component: () => import('../views/TablesView.vue'),
       },
+      // POSView
       {
-        path: 'pos',
+        path: '/pos',
         name: 'POS',
-        component: () => import('../views/PlaceholderView.vue'),
+        component: () => import('../components/POS/POSView.vue'),
       },
+      
       {
         path: 'kds',
         name: 'KDS',
-        component: () => import('../views/PlaceholderView.vue'),
+        component: () => import('../components/KDS/KDSView.vue')
       },
       {
         path: 'tracking',
         name: 'Tracking',
-        component: () => import('../views/PlaceholderView.vue'),
+        component: () => import('../components/Tracking/TrackingView.vue'),
+      },
+      // StaffView
+      {
+        path: 'staff',           
+        name: 'Staff',
+        component: () => import('../components/Staff/StaffView.vue'),
       },
 
        // SettingView 
       {
         path: '/settings',
         name: 'Settings',
-        //component: SettingsView,
         component: () => import('../views/SettingsView.vue'),
       },
       // SupportView
@@ -46,12 +49,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Support',
         component: () => import('../views/SupportView.vue'),
       },
-      // POSView
-      {
-        path: '/pos',
-        name: 'POS',
-        component: () => import('../components/POS/POSView.vue'),
-      }
+      
     ],
   },
 
