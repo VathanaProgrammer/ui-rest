@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { 
   MonitorSmartphone, 
   ChefHat, 
@@ -7,18 +7,26 @@ import {
   Armchair, 
   Users,
   Settings,
-  HelpCircle
+  HelpCircle,
+  LogOut
 } from 'lucide-vue-next';
+import { useLogin } from '../../composables/useLogin';
 
 const route = useRoute();
+const router = useRouter();
+const { logout } = useLogin();
 
 const navItems = [
   { name: 'POS', path: '/pos', icon: MonitorSmartphone },
   { name: 'KDS', path: '/kds', icon: ChefHat },
   { name: 'Tracking', path: '/tracking', icon: MapPin },
   { name: 'Tables', path: '/tables', icon: Armchair },
-  
 ];
+
+const handleLogout = () => {
+  logout();
+  router.push('/login');
+};
 </script>
 
 <template>
@@ -62,6 +70,15 @@ const navItems = [
           <HelpCircle class="w-4 h-4" />
           Support
         </router-link>
+
+        <!-- Logout button -->
+        <button
+          @click="handleLogout"
+          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500 hover:bg-opacity-10 transition-colors rounded-lg"
+        >
+          <LogOut class="w-4 h-4" />
+          Logout
+        </button>
       </div>
     </div>
   </aside>

@@ -1,12 +1,19 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, NavigationGuardNext, RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
+import { useLogin } from '../composables/useLogin';
 import DashboardLayout from '../layouts/DashboardLayout.vue';
 
-
 const routes: Array<RouteRecordRaw> = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/LoginView.vue'),
+    meta: { requiresAuth: false }
+  },
   {
     path: '/',
     component: DashboardLayout,
     redirect: '/tables',
+    meta: { requiresAuth: true },
     children: [
       {
         path: 'tables',
@@ -52,14 +59,31 @@ const routes: Array<RouteRecordRaw> = [
       
     ],
   },
-
- 
-
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Authentication guard
+router.beforeEach((
+  to: RouteLocationNormalized,
+  from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) => {
+  const { isAuthenticated } = useLogin();
+  const requiresAuth = to.meta.requiresAuth !== false;
+
+  if (requiresAuth && !isAuthenticated()) {
+    // Redirect to login if trying to access protected route
+    next('/login');
+  } else if (to.path === '/login' && isAuthenticated()) {
+    // Redirect to dashboard if already logged in and trying to access login
+    next('/tables');
+  } else {
+    next();
+  }
 });
 
 export default router;
