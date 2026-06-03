@@ -5,7 +5,7 @@ import {
   ChefHat, 
   MapPin, 
   Armchair, 
-  Plus,
+  Users,
   Settings,
   HelpCircle
 } from 'lucide-vue-next';
@@ -48,10 +48,10 @@ const navItems = [
 
     <!-- Bottom Actions -->
     <div class="p-4 space-y-4">
-      <button class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
-        <Plus class="w-5 h-5" />
-        New Ticket
-      </button>
+      <router-link to="/staff" class="w-full flex items-center justify-center bg-blue-600 gap-2  hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+        <Users class="w-5 h-5" />
+        staff
+      </router-link>
 
       <div class="space-y-1">
         <router-link to="/settings" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800">
