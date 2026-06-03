@@ -17,6 +17,7 @@ const navItems = [
   { name: 'KDS', path: '/kds', icon: ChefHat },
   { name: 'Tracking', path: '/tracking', icon: MapPin },
   { name: 'Tables', path: '/tables', icon: Armchair },
+  
 ];
 </script>
 
@@ -53,14 +54,14 @@ const navItems = [
       </button>
 
       <div class="space-y-1">
-        <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800">
+        <router-link to="/settings" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800">
           <Settings class="w-4 h-4" />
           Settings
-        </a>
-        <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800">
+        </router-link>
+        <router-link to="/support" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800">
           <HelpCircle class="w-4 h-4" />
           Support
-        </a>
+        </router-link>
       </div>
     </div>
   </aside>
