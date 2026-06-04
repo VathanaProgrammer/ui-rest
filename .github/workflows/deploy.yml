@@ -45,6 +45,9 @@ jobs:
             docker compose down --remove-orphans || true
             docker compose up -d --build
             docker image prune -f
+      - name: Download Success GIF
+        if: success()
+        run: curl -sL "https://media.giphy.com/media/11sBLVxNs7v6WA/giphy.gif" -o success.gif
 
       - name: Send Telegram Notification (Success)
         uses: appleboy/telegram-action@master
@@ -61,7 +64,10 @@ jobs:
             📝 Commit: ${{ github.event.head_commit.message }}
             ------------------------------------
             Awesome job, ${{ github.actor }}! The frontend deployment is fully live! 🎉
-          document: "https://media.giphy.com/media/11sBLVxNs7v6WA/giphy.gif"
+          document: success.gif
+      - name: Download Failure GIF
+        if: failure()
+        run: curl -sL "https://media.giphy.com/media/T1WqKkLYCbC12/giphy.gif" -o failure.gif
 
       - name: Send Telegram Notification (Failure)
         uses: appleboy/telegram-action@master
@@ -78,4 +84,4 @@ jobs:
             ------------------------------------
             Hey ${{ github.actor }}, the deployment pipeline failed.
             🔍 Review the logs here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          document: "https://media.giphy.com/media/T1WqKkLYCbC12/giphy.gif"
+          document: failure.gif
