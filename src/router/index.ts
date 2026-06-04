@@ -10,6 +10,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/result',
+    name: 'TestResult',
+    component: () => import('../views/TestResultView.vue'),
+    meta: { requiresAuth: false } // Public for testing
+  },
+  {
     path: '/',
     component: DashboardLayout,
     redirect: '/tables',
