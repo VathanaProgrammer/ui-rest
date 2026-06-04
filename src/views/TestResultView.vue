@@ -1,36 +1,34 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
+import { useOrderAlert } from '../composables/useOrderAlert'
+import { useRealTime } from '../composables/useRealTime'
 
 const items = ref<string[]>([])
-const connectionStatus = ref('Connecting...')
-let eventSource: EventSource | null = null
+const connectionStatus = ref('Connected - Waiting for events...')
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7444/api'
+const { showAlert } = useOrderAlert()
 
-onMounted(() => {
-  // Connect to the SSE stream on the backend
-  eventSource = new EventSource(`${baseUrl}/test/stream`)
-
-  eventSource.onopen = () => {
-    connectionStatus.value = 'Connected - Waiting for events...'
+// Use our new highly reusable real-time hook!
+useRealTime('/test/stream', {
+  
+  // You just list the events you want to listen to and what to do!
+  'newItem': (newItemData: string) => {
+    items.value.unshift(newItemData) // Add to top of list
+    
+    // Trigger global order alert
+    showAlert({
+      title: 'New Guest Booking',
+      timeText: 'JUST NOW',
+      table: 'T-04',
+      guests: 2,
+      orderType: 'PRE-ORDER',
+      orderName: newItemData,
+      actionLabel: 'VIEW ORDER',
+      playSound: true, 
+      onAction: () => console.log('Viewing order:', newItemData)
+    })
   }
-
-  // Listen for the custom "newItem" event
-  eventSource.addEventListener('newItem', (event: MessageEvent) => {
-    const newItem = event.data
-    items.value.unshift(newItem) // Add to top of list
-  })
-
-  eventSource.onerror = (err) => {
-    console.error('SSE Error:', err)
-    connectionStatus.value = 'Connection lost. Reconnecting...'
-  }
-})
-
-onUnmounted(() => {
-  if (eventSource) {
-    eventSource.close()
-  }
+  
 })
 </script>
 

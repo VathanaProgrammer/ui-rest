@@ -1,7 +1,8 @@
 <script setup lang="ts">
-// The main application layout is now handled by the DashboardLayout via Vue Router
+import OrderAlert from './components/layout/OrderAlert.vue'
 </script>
 
 <template>
   <router-view />
+  <OrderAlert />
 </template>

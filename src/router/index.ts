@@ -16,6 +16,24 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: false } // Public for testing
   },
   {
+    path: '/help',
+    name: 'HelpHub',
+    component: () => import('../views/HelpHubView.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/help/api',
+    name: 'ApiHelp',
+    component: () => import('../views/ApiHelpView.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/help/flow',
+    name: 'FlowHelp',
+    component: () => import('../views/FlowHelpView.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/',
     component: DashboardLayout,
     redirect: '/tables',
