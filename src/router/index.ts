@@ -46,11 +46,20 @@ const routes: Array<RouteRecordRaw> = [
       },
       // POSView
       {
-        path: '/pos',
+        path: 'pos',
         name: 'POS',
         component: () => import('../components/POS/POSView.vue'),
       },
-      
+      {
+        path: 'menu-management',
+        name: 'MenuManagement',
+        component: () => import('../views/MenuManagementView.vue'),
+      },
+      {
+        path: 'settings/menu',
+        name: 'MenuSettings',
+        component: () => import('../views/MenuManagementView.vue'),
+      },
       {
         path: 'kds',
         name: 'KDS',
@@ -63,20 +72,20 @@ const routes: Array<RouteRecordRaw> = [
       },
       // StaffView
       {
-        path: 'staff',           
+        path: 'staff',
         name: 'Staff',
         component: () => import('../components/Staff/StaffView.vue'),
       },
 
-       // SettingView 
+      // SettingView 
       {
-        path: '/settings',
+        path: 'settings',
         name: 'Settings',
         component: () => import('../views/SettingsView.vue'),
       },
       // SupportView
       {
-        path: '/support',
+        path: 'support',
         name: 'Support',
         component: () => import('../views/SupportView.vue'),
       },

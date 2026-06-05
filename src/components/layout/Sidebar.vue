@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { 
-  MonitorSmartphone, 
-  ChefHat, 
-  MapPin, 
-  Armchair, 
-  Users,
-  Settings,
-  HelpCircle,
-  LogOut
+import {
+    Armchair,
+    ChefHat,
+    HelpCircle,
+    ListChecks,
+    LogOut,
+    MapPin,
+    MonitorSmartphone,
+    Settings,
+    Users,
 } from 'lucide-vue-next';
+import { useRoute, useRouter } from 'vue-router';
 import { useLogin } from '../../composables/useLogin';
 
 const route = useRoute();
@@ -19,6 +20,7 @@ const { logout } = useLogin();
 const navItems = [
   { name: 'POS', path: '/pos', icon: MonitorSmartphone },
   { name: 'KDS', path: '/kds', icon: ChefHat },
+  { name: 'Menu Management', path: '/menu-management', icon: ListChecks },
   { name: 'Tracking', path: '/tracking', icon: MapPin },
   { name: 'Tables', path: '/tables', icon: Armchair },
   { name: 'Staff', path: '/staff', icon: Users },
