@@ -219,6 +219,47 @@
             </div>
           </div>
           
+          <!-- Scenario 4: Categories -->
+          <div class="mt-10">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-3">{{ t.realWorld.s4Title }}</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">{{ t.realWorld.s4Desc }}</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <!-- Code -->
+              <div class="rounded-xl overflow-hidden bg-[#1e1e1e] border border-gray-700 flex flex-col">
+                <div class="px-4 py-2 bg-[#2d2d2d] border-b border-[#404040]">
+                  <span class="text-xs text-gray-400 font-mono">CategoryList.vue</span>
+                </div>
+                <pre class="p-4 overflow-x-auto text-sm font-mono text-gray-300 flex-1">
+<span class="text-pink-400">const</span> categories = <span class="text-blue-400">ref</span>([]);
+
+<span class="text-blue-400">onMounted</span>(<span class="text-pink-400">async</span> () => {
+  <span class="text-gray-500">// Fetch from /categories endpoint</span>
+  <span class="text-pink-400">const</span> res = <span class="text-pink-400">await</span> api.<span class="text-blue-400">get</span>(<span class="text-green-400">'/categories'</span>);
+  
+  <span class="text-gray-500">// Extract the 'data' array from ApiResponse</span>
+  categories.value = res.data.data; 
+});</pre>
+              </div>
+
+              <!-- JSON Response -->
+              <div class="rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shadow-inner flex flex-col">
+                <div class="px-4 py-2 bg-slate-800 border-b border-slate-700">
+                  <span class="text-xs text-emerald-400 font-mono font-semibold">ApiResponse JSON</span>
+                </div>
+                <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300 flex-1">
+{
+  <span class="text-blue-400">"status"</span>: <span class="text-purple-400">1</span>,
+  <span class="text-blue-400">"message"</span>: <span class="text-green-400">"Success"</span>,
+  <span class="text-blue-400">"data"</span>: [
+    { <span class="text-blue-400">"id"</span>: <span class="text-purple-400">1</span>, <span class="text-blue-400">"categoryName"</span>: <span class="text-green-400">"Appetizers"</span>, <span class="text-blue-400">"isActive"</span>: <span class="text-purple-400">true</span> },
+    { <span class="text-blue-400">"id"</span>: <span class="text-purple-400">2</span>, <span class="text-blue-400">"categoryName"</span>: <span class="text-green-400">"Main Course"</span>, <span class="text-blue-400">"isActive"</span>: <span class="text-purple-400">true</span> }
+  ]
+}</pre>
+              </div>
+            </div>
+          </div>
+          
         </div>
       </div>
 
@@ -273,7 +314,9 @@ const dictionary = {
       s2Title: "2. Fetching by ID using Vue Router",
       s2Desc: "Often, you navigate to a page like <code>/users/1</code>. You can extract the `1` using Vue Router's <code>useRoute()</code> and inject it directly into the `/user/${userId}` URL.",
       s3Title: "3. Fetching Roles for a Dropdown Select",
-      s3Desc: "A very common task in admin panels is fetching a list of roles (RestUserRole) to populate a <code>&lt;select&gt;</code> input in a form."
+      s3Desc: "A very common task in admin panels is fetching a list of roles (RestUserRole) to populate a <code>&lt;select&gt;</code> input in a form.",
+      s4Title: "4. Fetching Categories (ApiResponse Wrapper)",
+      s4Desc: "When fetching from `/categories`, the response uses our custom `ApiResponse` wrapper. You must access `res.data.data` to get the actual array of categories."
     },
     advanced: {
       title: 'Advanced Usage',
@@ -300,8 +343,10 @@ const dictionary = {
       s1Desc: "នៅពេលទាញយកទិន្នន័យបញ្ជី Backend ផ្តល់ត្រលប់មកវិញនូវ Array ផ្ទាល់តែម្តង។ សូមសង្កេតមើលរបៀបដែលយើងកំណត់ response ទៅកាន់អថេរដោយផ្ទាល់ ព្រោះ API client បានទាញយក data payload ដោយស្វ័យប្រវត្តិរួចទៅហើយ។",
       s2Title: "២. ការទាញយកតាម ID ដោយប្រើ Vue Router",
       s2Desc: "ជាញឹកញាប់ អ្នកចូលទៅកាន់ទំព័រដូចជា <code>/users/1</code>។ អ្នកអាចទាញយកលេខ `1` នោះតាមរយៈ <code>useRoute()</code> របស់ Vue Router ហើយយកវាទៅភ្ជាប់ជាមួយ API `/user/${userId}`។",
-      s3Title: "៣. ការទាញយកទិន្នន័យ Role សម្រាប់ Dropdown Select",
-      s3Desc: "ការងារដែលជួបញឹកញាប់បំផុតគឺការទាញយកបញ្ជី Role (RestUserRole) ដើម្បីយកទៅបង្ហាញនៅក្នុង <code>&lt;select&gt;</code> dropdown ក្នុង Form បញ្ចូលទិន្នន័យ។"
+      s3Title: "៣. ការទាញយកតួនាទី (Roles) សម្រាប់ Dropdown Select",
+      s3Desc: "កិច្ចការទូទៅមួយនៅក្នុងផ្ទាំង Admin គឺការទាញយកបញ្ជីតួនាទី (RestUserRole) ដើម្បីបង្ហាញនៅក្នុង <code>&lt;select&gt;</code> input។",
+      s4Title: "៤. ការទាញយកប្រភេទមុខម្ហូប (Categories - ApiResponse)",
+      s4Desc: "នៅពេលទាញយកពី `/categories` ការឆ្លើយតបប្រើប្រាស់ `ApiResponse` wrapper របស់យើង។ អ្នកត្រូវប្រើ `res.data.data` ដើម្បីទទួលបានបញ្ជីពិតប្រាកដ។"
     },
     advanced: {
       title: 'ការប្រើប្រាស់កម្រិតខ្ពស់',
