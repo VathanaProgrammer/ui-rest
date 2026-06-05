@@ -40,12 +40,13 @@
       @staff-added="addStaff"
     />
 
-    <EditStaff
+    <EditStaffModal
       v-model="showEditModal"
       :member="editTarget"
       @staff-updated="handleStaffUpdated"
     />
-    <StaffDetail
+
+    <StaffDetailModal
       v-model="showDetailModal"
       :member="detailTarget"
       @edit="handleEdit"
@@ -60,8 +61,8 @@ import StaffStats        from './StaffStats.vue';
 import StaffTable        from './StaffTable.vue';
 import StaffBottomPanels from './StaffBottomPanels.vue';
 import AddStaffModal     from './AddStaffModal.vue';
-import EditStaff         from './EditStaff.vue';
-import StaffDetail from './StaffDetail.vue';
+import EditStaffModal    from './EditStaff.vue';
+import StaffDetailModal  from './StaffDetail.vue';
 import { useStaff }      from './useStaff';
 import type { StaffMember } from './types';
 
@@ -79,20 +80,19 @@ const {
   updateStaff,
 } = useStaff();
 
-const showAddModal  = ref(false);
-const showEditModal = ref(false);
-const editTarget    = ref<StaffMember | null>(null);
+const showAddModal    = ref(false);
+const showEditModal   = ref(false);
+const editTarget      = ref<StaffMember | null>(null);
 const showDetailModal = ref(false);
-const detailTarget    = ref<StaffMember | null>(null);  
+const detailTarget    = ref<StaffMember | null>(null);
 
 const handleManage = (id: string) => {
-  console.log('Manage staff:', id);
-  detailTarget.value = pagedStaff.value.find(m => m.id === id) ?? null;
+  detailTarget.value  = pagedStaff.value.find(m => m.id === id) ?? null;
   showDetailModal.value = true;
 };
 
 const handleEdit = (id: string) => {
-  editTarget.value = pagedStaff.value.find(m => m.id === id) ?? null;
+  editTarget.value  = pagedStaff.value.find(m => m.id === id) ?? null;
   showEditModal.value = true;
 };
 

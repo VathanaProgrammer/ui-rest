@@ -21,6 +21,8 @@ const navItems = [
   { name: 'KDS', path: '/kds', icon: ChefHat },
   { name: 'Tracking', path: '/tracking', icon: MapPin },
   { name: 'Tables', path: '/tables', icon: Armchair },
+  { name: 'Staff', path: '/staff', icon: Users },
+  { name: 'Category', path: '/category', icon: ChefHat },
 ];
 
 const handleLogout = () => {
@@ -56,11 +58,6 @@ const handleLogout = () => {
 
     <!-- Bottom Actions -->
     <div class="p-4 space-y-4">
-      <router-link to="/staff" class="w-full flex items-center justify-center bg-blue-600 gap-2  hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
-        <Users class="w-5 h-5" />
-        staff
-      </router-link>
-
       <div class="space-y-1">
         <router-link to="/settings" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800">
           <Settings class="w-4 h-4" />

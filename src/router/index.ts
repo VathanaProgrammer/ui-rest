@@ -62,6 +62,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Support',
         component: () => import('../views/SupportView.vue'),
       },
+      //CategoryView
+      {
+        path: '/category',
+        name: 'Category',
+        component: () => import('../components/Category/CategoryView.vue'),
+      },
       
     ],
   },

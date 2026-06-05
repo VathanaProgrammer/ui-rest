@@ -22,8 +22,7 @@
                 <input type="file" accept="image/jpeg,image/png" @change="onFileChange" hidden />
                 <template v-if="!previewUrl">
                   <svg class="upload-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="3" width="18" height="18" rx="3"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/>
                     <polyline points="21 15 16 10 5 21"/>
                   </svg>
                   <span class="upload-label">UPLOAD</span>
@@ -37,6 +36,12 @@
 
             <div class="form-body">
 
+              <!-- ─────────────────────────────────────────────────────────
+                   SECTION: Identity
+                   Fields: fullName, displayName
+                   API shape: { fullName: string, displayName: string }
+              ──────────────────────────────────────────────────────────── -->
+
               <!-- Full Name -->
               <div class="field-group full">
                 <label class="field-label">FULL NAME</label>
@@ -46,14 +51,42 @@
                 <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
               </div>
 
+              <!-- Display Name -->
+              <div class="field-group full">
+                <label class="field-label">DISPLAY NAME</label>
+                <div class="input-wrap">
+                  <input
+                    v-model="form.displayName"
+                    class="field-input"
+                    type="text"
+                    placeholder="e.g. Marcus C."
+                    :class="{ error: errors.displayName }"
+                  />
+                </div>
+                <span class="field-hint">Short name shown on station screens.</span>
+                <span v-if="errors.displayName" class="field-error">{{ errors.displayName }}</span>
+              </div>
+
+              <!-- ─────────────────────────────────────────────────────────
+                   SECTION: Work Assignment
+                   Fields: role, shift, employeeId (read-only — set by API on creation)
+                   API shape: { role: { id: number, roleName: string }, employeeId: string }
+                   TODO: roles list → fetch from GET /api/roles
+              ──────────────────────────────────────────────────────────── -->
+
               <!-- Role + Shift -->
               <div class="field-row">
                 <div class="field-group">
                   <label class="field-label">ROLE</label>
                   <div class="input-wrap select-wrap">
                     <select v-model="form.role" class="field-input field-select" :class="{ error: errors.role }">
-                      <option value="">Select role…</option>
-                      <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
+                      <option :value="0">Select role…</option>
+                      <!--
+                        TODO: replace `roles` with API data:
+                        const roles = await fetch('/api/roles').then(r => r.json())
+                        map to: { id: r.id, label: r.roleName }
+                      -->
+                      <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.label }}</option>
                     </select>
                     <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                   </div>
@@ -73,7 +106,36 @@
                 </div>
               </div>
 
-              <!-- Status -->
+              <!-- Employee ID — read-only; was auto-assigned by API on creation -->
+              <div class="field-group full">
+                <label class="field-label">EMPLOYEE ID</label>
+                <div class="input-wrap icon-input">
+                  <svg class="input-prefix-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2"/>
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                    <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+                  </svg>
+                  <!--
+                    TODO: API returns employeeId on the member object (e.g. "EMP-2026-089").
+                    Display as read-only; it cannot be changed after creation.
+                  -->
+                  <input
+                    :value="form.employeeId"
+                    class="field-input has-prefix readonly-input"
+                    type="text"
+                    readonly
+                    tabindex="-1"
+                  />
+                </div>
+                <span class="field-hint">Assigned by the system — cannot be changed.</span>
+              </div>
+
+              <!-- ─────────────────────────────────────────────────────────
+                   SECTION: Status
+                   API shape: { currentStatus: 'ACTIVE' | 'ON_BREAK' | 'OFF_DUTY' }
+                   Note: API uses UPPER_SNAKE_CASE; mapped to StaffStatus (lowercase-kebab)
+              ──────────────────────────────────────────────────────────── -->
+
               <div class="field-group full">
                 <label class="field-label">STATUS</label>
                 <div class="status-options">
@@ -90,6 +152,12 @@
                 </div>
               </div>
 
+              <!-- ─────────────────────────────────────────────────────────
+                   SECTION: Contact
+                   Fields: emailAddress, phoneNumber
+                   API shape: { emailAddress: string, phoneNumber: string }
+              ──────────────────────────────────────────────────────────── -->
+
               <!-- Contact Email -->
               <div class="field-group full">
                 <label class="field-label">CONTACT EMAIL</label>
@@ -102,7 +170,82 @@
                 <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
               </div>
 
-            </div>
+              <!-- Phone Number -->
+              <div class="field-group full">
+                <label class="field-label">PHONE NUMBER</label>
+                <div class="input-wrap icon-input">
+                  <svg class="input-prefix-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  <input
+                    v-model="form.phoneNumber"
+                    class="field-input has-prefix"
+                    type="tel"
+                    placeholder="+1-555-0199"
+                    :class="{ error: errors.phoneNumber }"
+                  />
+                </div>
+                <span v-if="errors.phoneNumber" class="field-error">{{ errors.phoneNumber }}</span>
+              </div>
+
+              <!-- ─────────────────────────────────────────────────────────
+                   SECTION: Security — PIN reset (optional on edit)
+                   Leave both fields blank to keep the existing PIN unchanged.
+                   API shape: { accessPin: string } — only sent if user fills it in.
+              ──────────────────────────────────────────────────────────── -->
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">NEW PIN <span class="field-label-optional">(OPTIONAL)</span></label>
+                  <div class="input-wrap icon-input">
+                    <svg class="input-prefix-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input
+                      v-model="form.accessPin"
+                      class="field-input has-prefix"
+                      :type="showPin ? 'text' : 'password'"
+                      placeholder="Leave blank to keep"
+                      maxlength="6"
+                      inputmode="numeric"
+                      :class="{ error: errors.accessPin }"
+                    />
+                    <button type="button" class="pin-toggle" @click="showPin = !showPin" :aria-label="showPin ? 'Hide PIN' : 'Show PIN'">
+                      <svg v-if="!showPin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <span class="field-hint">4–6 digits. Stored securely via bcrypt.</span>
+                  <span v-if="errors.accessPin" class="field-error">{{ errors.accessPin }}</span>
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label">CONFIRM NEW PIN</label>
+                  <div class="input-wrap icon-input">
+                    <svg class="input-prefix-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <input
+                      v-model="form.accessPinConfirm"
+                      class="field-input has-prefix"
+                      :type="showPin ? 'text' : 'password'"
+                      placeholder="Re-enter new PIN"
+                      maxlength="6"
+                      inputmode="numeric"
+                      :class="{ error: errors.accessPinConfirm }"
+                    />
+                  </div>
+                  <span v-if="errors.accessPinConfirm" class="field-error">{{ errors.accessPinConfirm }}</span>
+                </div>
+              </div>
+
+            </div><!-- /form-body -->
 
             <div class="modal-footer">
               <button class="btn-cancel" @click="$emit('update:modelValue', false)">CANCEL</button>
@@ -137,17 +280,36 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void;
-  (e: 'staff-updated', payload: StaffMember): void;
+  (e: 'staff-updated', payload: StaffMember & {
+    displayName: string;
+    phoneNumber: string;
+    employeeId: string;
+    accessPin?: string;   // only present if user chose to reset it
+  }): void;
 }>();
 
 // ── Static data ──────────────────────────────────────────────────────────────
-const roles = ['Head Chef', 'Sous Chef', 'Line Cook', 'Prep Cook', 'Server', 'Bartender', 'Host', 'Manager'];
+// TODO: fetch roles from GET /api/roles → map to { id: number, label: string }
+// API shape: { id: number, roleName: string }
+const roles = [
+  { id: 1, label: 'Manager'    },
+  { id: 2, label: 'Head Chef'  },
+  { id: 3, label: 'Sous Chef'  },
+  { id: 4, label: 'Line Cook'  },
+  { id: 5, label: 'Prep Cook'  },
+  { id: 6, label: 'Server'     },
+  { id: 7, label: 'Bartender'  },
+  { id: 8, label: 'Host'       },
+];
+
 const shifts = [
   { label: 'Morning',   display: 'Morning   (06:00 – 14:00)' },
   { label: 'Afternoon', display: 'Afternoon (10:00 – 18:00)' },
   { label: 'Evening',   display: 'Evening   (14:00 – 22:00)' },
   { label: 'Night',     display: 'Night     (22:00 – 06:00)' },
 ];
+
+// API shape: currentStatus is UPPER_SNAKE_CASE; mapped to StaffStatus (lowercase-kebab)
 const statuses: { value: StaffStatus; label: string }[] = [
   { value: 'active',   label: 'Active'   },
   { value: 'on-break', label: 'On Break' },
@@ -157,20 +319,52 @@ const statuses: { value: StaffStatus; label: string }[] = [
 // ── State ────────────────────────────────────────────────────────────────────
 const previewUrl = ref('');
 const submitting = ref(false);
-const form   = reactive({ name: '', role: '', shift: '', email: '', status: 'off-duty' as StaffStatus });
-const errors = reactive({ name: '', role: '', shift: '', email: '' });
+const showPin    = ref(false);
 
+const form = reactive({
+  name:             '',
+  displayName:      '',    // API: displayName
+  role:             0,     // API: role.id (number)
+  shift:            '',
+  email:            '',    // API: emailAddress
+  phoneNumber:      '',    // API: phoneNumber
+  employeeId:       '',    // API: employeeId — read-only after creation
+  accessPin:        '',    // API: accessPin — only sent if filled
+  accessPinConfirm: '',    // client-only; NOT sent to API
+  status:           'off-duty' as StaffStatus,
+});
+
+const errors = reactive({
+  name:             '',
+  displayName:      '',
+  role:             '',
+  shift:            '',
+  email:            '',
+  phoneNumber:      '',
+  accessPin:        '',
+  accessPinConfirm: '',
+});
+
+// Populate form when the member prop changes
 watch(
   () => props.member,
   (m) => {
     if (!m) return;
-    form.name   = m.name;
-    form.role   = m.role;
-    form.shift  = m.shift;
-    form.email  = m.email;
-    form.status = m.status;
+    form.name        = m.name;
+    form.displayName = (m as any).displayName ?? '';
+    // TODO: when roles come from API, match m.role string to role.id
+    // For now: find by label, fall back to 0
+    form.role        = roles.find(r => r.label === m.role)?.id ?? 0;
+    form.shift       = m.shift;
+    form.email       = m.email;
+    form.phoneNumber = (m as any).phoneNumber ?? '';
+    form.employeeId  = (m as any).employeeId  ?? m.id;
+    form.status      = m.status;
+    form.accessPin        = '';
+    form.accessPinConfirm = '';
     previewUrl.value = m.avatar ?? '';
-    errors.name = errors.role = errors.shift = errors.email = '';
+    // clear errors
+    Object.keys(errors).forEach(k => ((errors as any)[k] = ''));
   },
   { immediate: true }
 );
@@ -184,26 +378,66 @@ function onFileChange(e: Event) {
 }
 
 function validate(): boolean {
-  errors.name  = form.name.trim() ? '' : 'Full name is required.';
-  errors.role  = form.role        ? '' : 'Please select a role.';
-  errors.shift = form.shift       ? '' : 'Please select a shift.';
-  errors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? '' : 'Enter a valid email.';
-  return !errors.name && !errors.role && !errors.shift && !errors.email;
+  errors.name        = form.name.trim()        ? '' : 'Full name is required.';
+  errors.displayName = form.displayName.trim() ? '' : 'Display name is required.';
+  errors.role        = form.role               ? '' : 'Please select a role.';
+  errors.shift       = form.shift              ? '' : 'Please select a shift.';
+  errors.email       = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? '' : 'Enter a valid email.';
+  errors.phoneNumber = form.phoneNumber.trim() ? '' : 'Phone number is required.';
+
+  // PIN is optional on edit — only validate if the user has started typing
+  if (form.accessPin) {
+    errors.accessPin        = /^\d{4,6}$/.test(form.accessPin) ? '' : 'PIN must be 4–6 digits.';
+    errors.accessPinConfirm = form.accessPin === form.accessPinConfirm ? '' : 'PINs do not match.';
+  } else {
+    errors.accessPin = errors.accessPinConfirm = '';
+  }
+
+  return !Object.values(errors).some(Boolean);
 }
 
 async function handleSubmit() {
   if (!validate() || !props.member) return;
   submitting.value = true;
+
+  // TODO: replace the timeout below with a real API call:
+  //
+  // const payload: Record<string, unknown> = {
+  //   fullName:      form.name,
+  //   displayName:   form.displayName,
+  //   role:          { id: form.role },
+  //   shift:         form.shift,
+  //   emailAddress:  form.email,
+  //   phoneNumber:   form.phoneNumber,
+  //   avatarUrl:     previewUrl.value || undefined,
+  //   currentStatus: form.status.toUpperCase().replace('-', '_'),
+  // };
+  // if (form.accessPin) payload.accessPin = form.accessPin; // only send if changed
+  //
+  // await fetch(`/api/staff/${props.member.id}`, {
+  //   method: 'PATCH',
+  //   body: JSON.stringify(payload),
+  //   headers: { 'Content-Type': 'application/json' },
+  // });
+
   await new Promise(r => setTimeout(r, 700));
+
+  const updatedRole = roles.find(r => r.id === form.role)?.label ?? props.member.role;
+
   emit('staff-updated', {
     ...props.member,
-    name:   form.name,
-    role:   form.role,
-    shift:  form.shift as StaffMember['shift'],
-    email:  form.email,
-    status: form.status,
-    avatar: previewUrl.value,
-  });
+    name:        form.name,
+    displayName: form.displayName,
+    role:        updatedRole,
+    shift:       form.shift as StaffMember['shift'],
+    email:       form.email,
+    phoneNumber: form.phoneNumber,
+    employeeId:  form.employeeId,
+    status:      form.status,
+    avatar:      previewUrl.value,
+    ...(form.accessPin ? { accessPin: form.accessPin } : {}),
+  } as any);
+
   submitting.value = false;
   emit('update:modelValue', false);
 }
@@ -218,18 +452,19 @@ async function handleSubmit() {
   padding: 20px;
 }
 .modal-card {
-  width: 100%; max-width: 480px;
+  width: 100%; max-width: 520px;
+  max-height: 92vh; overflow-y: auto;
   background: #111827;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 18px;
   box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(37,99,235,0.12) inset;
-  overflow: hidden;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .modal-header {
   display: flex; align-items: flex-start;
-  justify-content: space-between;
-  padding: 28px 28px 0;
+  justify-content: space-between; padding: 28px 28px 20px;
+  position: sticky; top: 0; background: #111827; z-index: 1;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .modal-title    { font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0 0 4px; letter-spacing: -0.3px; }
 .modal-subtitle { font-size: 13px; color: #475569; margin: 0; }
@@ -266,7 +501,9 @@ async function handleSubmit() {
 .field-group { display: flex; flex-direction: column; gap: 6px; }
 .field-group.full { grid-column: 1 / -1; }
 .field-label { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 1px; }
-.input-wrap { position: relative; }
+.field-label-optional { font-weight: 400; color: #334155; letter-spacing: 0.5px; }
+.field-hint  { font-size: 11.5px; color: #334155; margin-top: -2px; }
+.input-wrap  { position: relative; }
 
 .field-input {
   width: 100%; background: #1e293b;
@@ -280,11 +517,10 @@ async function handleSubmit() {
 .field-input::placeholder { color: #475569; }
 .field-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.18); }
 .field-input.error { border-color: #ef4444; }
+.readonly-input { color: #475569; cursor: default; }
+.readonly-input:focus { border-color: rgba(255,255,255,0.08); box-shadow: none; }
 
-.field-select {
-  -webkit-appearance: none; appearance: none;
-  padding-right: 36px; cursor: pointer;
-}
+.field-select { -webkit-appearance: none; appearance: none; padding-right: 36px; cursor: pointer; }
 .field-select option { background: #1e293b; }
 .select-chevron {
   position: absolute; right: 12px; top: 50%;
@@ -292,51 +528,51 @@ async function handleSubmit() {
 }
 
 /* ── Status radio pills ─────────────────────────────── */
-.status-options {
-  display: flex;
-  gap: 10px;
-}
+.status-options { display: flex; gap: 10px; flex-wrap: wrap; }
 .status-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid #1e2d45;
-  background: #1a2540;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: #64748b;
-  user-select: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 8px;
+  border: 1px solid #1e2d45; background: #1a2540;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+  cursor: pointer; transition: all 0.15s;
+  color: #64748b; user-select: none;
 }
 .status-option:hover { border-color: #2d3f5e; color: #94a3b8; }
-
 .status-option.selected.active   { border-color: #166534; background: #052e16; color: #4ade80; }
 .status-option.selected.on-break { border-color: #92400e; background: #1c1506; color: #fbbf24; }
 .status-option.selected.off-duty { border-color: #ff0000; background: #1e293b; color: #94a3b8; }
 
-.status-dot-sm {
-  width: 7px; height: 7px;
-  border-radius: 50%; flex-shrink: 0;
-}
+.status-dot-sm { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .status-dot-sm.active   { background: #4ade80; box-shadow: 0 0 5px #4ade80aa; }
 .status-dot-sm.on-break { background: #fbbf24; }
 .status-dot-sm.off-duty { background: #ff2a00; }
 
+/* ── Icon prefix inputs ─────────────────────────────── */
 .icon-input .input-prefix-icon {
   position: absolute; left: 13px; top: 50%;
   transform: translateY(-50%); color: #475569;
 }
-.icon-input .has-prefix { padding-left: 36px; }
+.icon-input .has-prefix { padding-left: 36px; padding-right: 36px; }
+
+/* ── PIN toggle ──────────────────────────────────────── */
+.pin-toggle {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; padding: 0;
+  color: #475569; cursor: pointer; display: flex;
+  transition: color 0.15s;
+}
+.pin-toggle:hover { color: #94a3b8; }
+
 .field-error { font-size: 11.5px; color: #f87171; margin-top: -2px; }
 
 .modal-footer {
   display: flex; align-items: center;
   justify-content: flex-end; gap: 12px;
   padding: 24px 28px 28px;
+  position: sticky; bottom: 0; background: #111827;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 22px;
 }
 .btn-cancel {
   background: transparent; border: none; color: #64748b;
