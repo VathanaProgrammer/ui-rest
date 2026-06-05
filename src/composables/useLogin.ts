@@ -13,7 +13,7 @@ export function useLogin() {
   // Since tokens are HttpOnly cookies now, we just track if they are logged in via a simple localStorage flag
   const token = ref<string | null>(localStorage.getItem('isLoggedIn') ? 'true' : null)
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7444/api'
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     loading.value = true

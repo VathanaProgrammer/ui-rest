@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
+import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,4 +8,14 @@ export default defineConfig({
     vue(),
     tailwindcss()
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:7444',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
+      },
+    },
+  },
 })
