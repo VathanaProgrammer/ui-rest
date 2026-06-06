@@ -1,0 +1,282 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+// 1. Create the interface for the menu item response
+interface MenuItem {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
+  itemType: string;
+  isAvailable: boolean;
+}
+
+interface ApiResponse<T> {
+  status: number;
+  message: string;
+  data: T;
+}
+
+const menuItems = ref<MenuItem[]>([]);
+const loading = ref(true);
+const errorMsg = ref<string | null>(null);
+
+const fetchMenuItems = async () => {
+  loading.value = true;
+  errorMsg.value = null;
+  try {
+    const response = await axios.get<ApiResponse<MenuItem[]>>('http://localhost:7444/api/menu-items', {
+      withCredentials: true
+    });
+    
+    if (response.data.status === 1) {
+      menuItems.value = response.data.data;
+    } else {
+      errorMsg.value = response.data.message;
+    }
+  } catch (error: any) {
+    console.error('Error fetching menu items:', error);
+    errorMsg.value = error.message || 'Failed to load menu items';
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchMenuItems();
+});
+</script>
+
+<template>
+  <div class="menu-container">
+    <div class="header">
+      <h2>Delicious Menu</h2>
+      <p>Discover our chef's finest creations</p>
+    </div>
+    
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Preparing your menu...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="errorMsg" class="error-state">
+      <p>⚠️ {{ errorMsg }}</p>
+      <button @click="fetchMenuItems" class="retry-btn">Try Again</button>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="menuItems.length === 0" class="empty-state">
+      <p>Our menu is currently being updated. Check back soon!</p>
+    </div>
+
+    <!-- Display Data -->
+    <div v-else class="menu-grid">
+      <div v-for="item in menuItems" :key="item.id" class="menu-card">
+        <div class="image-wrapper">
+          <img :src="item.imageUrl" :alt="item.name" class="menu-image" loading="lazy" />
+          <span class="badge" :class="item.itemType.toLowerCase().replace(' ', '-')">{{ item.itemType }}</span>
+        </div>
+        <div class="menu-info">
+          <div class="title-row">
+            <h3 class="menu-name">{{ item.name }}</h3>
+            <span class="menu-price">${{ item.price.toFixed(2) }}</span>
+          </div>
+          <p class="status-text" :class="{ 'unavailable': !item.isAvailable }">
+            {{ item.isAvailable ? 'Available Now' : 'Sold Out' }}
+          </p>
+          <button class="add-to-cart" :disabled="!item.isAvailable">
+            {{ item.isAvailable ? 'Add to Order' : 'Sold Out' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.menu-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #2c3e50;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #ff6b6b, #c0392b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* States */
+.loading-state, .error-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #ff6b6b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Grid Layout */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+/* Card Design */
+.menu-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.image-wrapper {
+  position: relative;
+  height: 220px;
+  width: 100%;
+  overflow: hidden;
+  background: #f1f2f6;
+}
+
+.menu-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.menu-card:hover .menu-image {
+  transform: scale(1.05);
+}
+
+.badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.menu-info {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.menu-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2d3436;
+  line-height: 1.3;
+}
+
+.menu-price {
+  font-weight: 800;
+  color: #e17055;
+  font-size: 1.3rem;
+}
+
+.status-text {
+  font-size: 0.9rem;
+  color: #27ae60;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.status-text.unavailable {
+  color: #e74c3c;
+}
+
+.add-to-cart {
+  margin-top: auto;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff6b6b, #c0392b);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.add-to-cart:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.add-to-cart:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+</style>

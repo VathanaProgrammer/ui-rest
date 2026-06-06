@@ -95,6 +95,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Category',
         component: () => import('../components/Category/CategoryView.vue'),
       },
+      {
+        path: "/show",
+        name: "Show",
+        component: () => import('../components/POS/components/Show.vue'),
+      }
       
     ],
   },
