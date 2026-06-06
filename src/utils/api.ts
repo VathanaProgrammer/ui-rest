@@ -7,7 +7,18 @@ export interface ApiResponse<T = any> {
   data: T;
 }
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+// Now let me explain what it does.
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7444/api'; // my ai is missed this path
+// I defind a baseUrl which mean the url of our api backend so you don't need to type http://localhost everytime
+// but what the value of the baseUrl goes from ? 
+// Well this is the code that is an env file is .env.production
+// so in the real domain it will choose this value inside the .env.product but in the local it will use the localhost
+// this is the flexible thing that I did for our team but they does not understand 
+// so even though our team use localhostt url but the system will change it to use domain name instead?
+// yes but if they type exactly like this axios.get("http://localhost") this can not still help 
+// that is why I create this now look at what the code this file help
+// it not 100% right but it also c
 
 /**
  * Global configured Axios instance.
@@ -91,11 +102,19 @@ export async function useApiCall<T = any>(
  * Convenience wrapper for the most common REST operations.
  * This can be imported anywhere in the app to make clean API calls.
  */
+
+// this export mean you can import this api to use in your file
+// and what it help ?
 export const api = {
   /**
    * Make a GET request
    * @example api.get<User[]>('/users', { page: 1 })
    */
+  // so when you import you will write api.get() which already appy the value of a url to our api
+  // is localhost or bff.learner-teach.online/api
+  // because the url is already assign the value to that 
+  // let me show you how to call and use it 
+  // back to our code
   get: <T = any>(url: string, params?: any, config?: AxiosRequestConfig) => 
     useApiCall<T>(url, 'GET', undefined, params, config),
     

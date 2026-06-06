@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Pencil, Trash2, UtensilsCrossed } from 'lucide-vue-next';
+import { ref } from 'vue';
 import type { Category } from './types';
 
 defineProps<{
@@ -11,6 +12,12 @@ defineEmits<{
   (e: 'delete', id: number): void;
   (e: 'toggle-status', id: number): void;
 }>();
+
+const imgError = ref(false);
+
+const onImgError = () => {
+  imgError.value = true;
+};
 </script>
 
 <template>
@@ -20,11 +27,22 @@ defineEmits<{
       <span class="checkbox" />
     </td>
 
-    <!-- Name + Icon -->
+    <!-- Name + Image/Icon -->
     <td class="col-name">
       <div class="name-cell">
-        <span class="cat-icon-wrap" :style="{ background: category.iconBg }">
-          <UtensilsCrossed class="cat-icon" :style="{ color: category.iconColor }" />
+        <span class="cat-icon-wrap">
+          <img
+            v-if="category.imageUrl && !imgError"
+            :src="category.imageUrl"
+            :alt="category.name"
+            class="cat-img"
+            @error="onImgError"
+          />
+          <UtensilsCrossed
+            v-else
+            class="cat-icon"
+            :style="{ color: category.iconColor || '#94a3b8' }"
+          />
         </span>
         <span class="cat-name">{{ category.name }}</span>
       </div>
@@ -32,7 +50,7 @@ defineEmits<{
 
     <!-- Item Count -->
     <td class="col-count">
-      <span class="count-val">{{ category.itemCount }}</span>
+      <span class="count-val">{{ category.itemCount ?? '—' }}</span>
     </td>
 
     <!-- Status -->
@@ -79,19 +97,14 @@ defineEmits<{
   border-bottom: 1px solid #1e293b;
   transition: background 0.12s;
 }
-.cat-row:last-child {
-  border-bottom: none;
-}
-.cat-row:hover {
-  background: #131e30;
-}
+.cat-row:last-child { border-bottom: none; }
+.cat-row:hover { background: #131e30; }
 
 td {
   padding: 1.1rem 1.25rem;
   vertical-align: middle;
 }
 
-/* Column sizing */
 .col-check   { width: 3rem; }
 .col-name    { min-width: 14rem; }
 .col-count   { width: 7rem; text-align: center; }
@@ -109,12 +122,13 @@ td {
   cursor: pointer;
 }
 
-/* Name */
+/* Name cell */
 .name-cell {
   display: flex;
   align-items: center;
   gap: 0.85rem;
 }
+
 .cat-icon-wrap {
   display: flex;
   align-items: center;
@@ -123,11 +137,23 @@ td {
   height: 2.2rem;
   border-radius: 0.45rem;
   flex-shrink: 0;
+  background: #1e293b;
+  overflow: hidden;   /* clips the image inside the rounded box */
 }
+
+/* Image from API */
+.cat-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback icon */
 .cat-icon {
   width: 1rem;
   height: 1rem;
 }
+
 .cat-name {
   font-size: 0.95rem;
   font-weight: 500;
@@ -223,24 +249,9 @@ td {
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.edit-btn {
-  background: #1e293b;
-  color: #94a3b8;
-}
-.edit-btn:hover {
-  background: #2563eb;
-  color: #fff;
-}
-.delete-btn {
-  background: #1e293b;
-  color: #94a3b8;
-}
-.delete-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-}
-.action-icon {
-  width: 0.9rem;
-  height: 0.9rem;
-}
+.edit-btn   { background: #1e293b; color: #94a3b8; }
+.edit-btn:hover   { background: #2563eb; color: #fff; }
+.delete-btn { background: #1e293b; color: #94a3b8; }
+.delete-btn:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.action-icon { width: 0.9rem; height: 0.9rem; }
 </style>

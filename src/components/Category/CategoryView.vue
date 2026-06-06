@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import CategoryHeader from './CategoryHeader.vue';
 import CategoryTable from './CategoryTable.vue';
 import CategoryPagination from './CategoryPagination.vue';
 import CategoryModal from './CategoryModal.vue';
-import { breadcrumbs, mockCategories } from './categoryData';
+import { breadcrumbs } from './categoryData';
 import type { Category, PaginationInfo } from './types';
+import api from '../../utils/api.ts';
 
 // ── Constants ─────────────────────────────────────────────────────────
 const PAGE_SIZE = 5;
@@ -13,8 +14,90 @@ const PAGE_SIZE = 5;
 // ── State ─────────────────────────────────────────────────────────────
 const showModal    = ref(false);
 const editCategory = ref<Category | null>(null);
-const categories   = ref<Category[]>([...mockCategories]);
 const currentPage  = ref(1);
+const categories   = ref<Category[]>([]);
+
+// ── API: Fetch all categories ─────────────────────────────────────────
+const getCategories = async () => {
+  try {
+    const response = await api.get('/categories');
+    if (response.status === 1 && Array.isArray(response.data)) {
+      categories.value = response.data.map((item: any) => ({
+       id:           item.id,
+      name:         item.categoryName || item.name,
+      displayOrder: item.displayOrder != null ? String(item.displayOrder) : '—',
+      status:       item.isActive === true || item.status === 'active' ? 'active' : 'inactive',
+      iconColor:    item.iconColor || '#94a3b8',  // fixed typo (was iconClor)
+      imageUrl:     item.imageUrl  || '',          // maps correctly now
+      }));
+    } else {
+      console.error('Failed to load categories:', response.message);
+    }
+  } catch (err) {
+    console.error('Failed to fetch categories:', err);
+  }
+};
+
+// ── API: Delete category ──────────────────────────────────────────────
+const handleDelete = async (id: number) => {
+  if (!confirm('Are you sure you want to delete this category?')) return;
+  try {
+    const response = await api.delete(`/categories/${id}`);
+    if (response.status === 1) {
+      categories.value = categories.value.filter(c => c.id !== id);
+      clampPage();
+    } else {
+      alert(response.message || 'Failed to delete category.');
+    }
+  } catch (err) {
+    console.error('Delete failed:', err);
+    alert('Something went wrong. Please try again.');
+  }
+};
+
+// ── API: Toggle status ────────────────────────────────────────────────
+
+const handleToggleStatus = async (id: number) => {
+  const cat = categories.value.find(c => c.id === id);
+  if (!cat) return;
+
+  const newStatus = cat.status === 'active' ? 'inactive' : 'active';
+
+  try {
+    const response = await api.put(`/categories/${id}`, {
+      categoryName: cat.name,
+      // convert displayOrder back to number for API, or null if '—'
+      displayOrder: cat.displayOrder && cat.displayOrder !== '—' 
+                    ? Number(cat.displayOrder) 
+                    : null,
+      isActive:     newStatus === 'active',
+      iconColor:    cat.iconColor,
+      imageUrl:     cat.imageUrl || null,
+    });
+
+    if (response.status === 1) {
+      cat.status = newStatus;
+    } else {
+      alert(response.message || 'Failed to update status.');
+    }
+  } catch (err) {
+    console.error('Toggle status failed:', err);
+    alert('Something went wrong. Please try again.');
+  }
+};
+
+// Fix handleModalUpdate — splice triggers Vue reactivity properly
+const handleModalUpdate = (updated: Category) => {
+  const idx = categories.value.findIndex(c => c.id === updated.id);
+  if (idx !== -1) {
+    // splice instead of direct assignment so Vue detects the change
+    categories.value.splice(idx, 1, updated);
+  }
+};
+
+onMounted(() => {
+  getCategories();
+});
 
 // ── Derived pagination ────────────────────────────────────────────────
 const totalItems = computed(() => categories.value.length);
@@ -37,7 +120,6 @@ const pagination = computed<PaginationInfo>(() => {
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────
-// After deleting rows, clamp page so we never show an empty page
 const clampPage = () => {
   if (currentPage.value > totalPages.value) {
     currentPage.value = totalPages.value;
@@ -50,39 +132,22 @@ const handleAdd = () => {
   showModal.value    = true;
 };
 
+// Edit: just opens the modal — API call happens inside CategoryModal
 const handleEdit = (id: number) => {
   editCategory.value = categories.value.find(c => c.id === id) ?? null;
   showModal.value    = true;
 };
 
-const handleModalSubmit = (newCat: Omit<Category, 'id'>) => {
-  const nextId    = categories.value.length + 1;
-  const nextOrder = String(nextId).padStart(2, '0');
-
-  categories.value.push({
-    ...newCat,
-    id:           nextId,
-    displayOrder: newCat.displayOrder && newCat.displayOrder !== '—' ? newCat.displayOrder : nextOrder,
-  });
-
-  // Jump to last page so the user sees the new row
+// Modal emits full Category object with real id from API
+const handleModalSubmit = (newCat: Category) => {
+  categories.value.push(newCat);
   currentPage.value = totalPages.value;
 };
 
-const handleModalUpdate = (updated: Category) => {
-  const idx = categories.value.findIndex(c => c.id === updated.id);
-  if (idx !== -1) categories.value[idx] = updated;
-};
-
-const handleDelete = (id: number) => {
-  categories.value = categories.value.filter(c => c.id !== id);
-  clampPage();
-};
-
-const handleToggleStatus = (id: number) => {
-  const cat = categories.value.find(c => c.id === id);
-  if (cat) cat.status = cat.status === 'active' ? 'inactive' : 'active';
-};
+// const handleModalUpdate = (updated: Category) => {
+//   const idx = categories.value.findIndex(c => c.id === updated.id);
+//   if (idx !== -1) categories.value[idx] = updated;
+// };
 
 const handlePageChange = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
@@ -98,7 +163,6 @@ const handleClose = () => {
 
 <template>
   <div class="category-page">
-
     <CategoryHeader
       :breadcrumbs="breadcrumbs"
       title="Category Management"
@@ -126,7 +190,6 @@ const handleClose = () => {
       @submit="handleModalSubmit"
       @update="handleModalUpdate"
     />
-
   </div>
 </template>
 
