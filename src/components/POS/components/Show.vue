@@ -9,7 +9,7 @@ interface MenuItem {
   price: number;
   imageUrl: string;
   itemType: string;
-  isAvailable: boolean;
+  status: string;
 }
 
 interface ApiResponse<T> {
@@ -121,11 +121,15 @@ onMounted(() => {
             <h3 class="menu-name">{{ item.name }}</h3>
             <span class="menu-price">${{ item.price.toFixed(2) }}</span>
           </div>
-          <p class="status-text" :class="{ 'unavailable': !item.isAvailable }">
-            {{ item.isAvailable ? 'Available Now' : 'Sold Out' }}
+          <p class="status-text" :class="{ 
+              'in-stock': item.status === 'IN STOCK',
+              'low-stock': item.status === 'LOW STOCK',
+              'unavailable': item.status === 'SOLD OUT' 
+            }">
+            {{ item.status }}
           </p>
-          <button class="add-to-cart" :disabled="!item.isAvailable">
-            {{ item.isAvailable ? 'Add to Order' : 'Sold Out' }}
+          <button class="add-to-cart" :disabled="item.status === 'SOLD OUT'">
+            {{ item.status !== 'SOLD OUT' ? 'Add to Order' : 'Sold Out' }}
           </button>
         </div>
       </div>
@@ -323,13 +327,30 @@ onMounted(() => {
 
 .status-text {
   font-size: 0.9rem;
-  color: #27ae60;
-  font-weight: 500;
+  font-weight: 700;
   margin-bottom: 1.5rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.status-text.in-stock {
+  color: #27ae60;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.status-text.low-stock {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.1);
+  border: 1px solid rgba(243, 156, 18, 0.3);
 }
 
 .status-text.unavailable {
   color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
 }
 
 .add-to-cart {
