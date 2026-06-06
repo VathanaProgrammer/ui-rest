@@ -8,7 +8,7 @@ interface MenuItem {
   name: string;
   price: number;
   imageUrl: string;
-  itemType: string;
+  category: Category;
   status: string;
 }
 
@@ -114,7 +114,9 @@ onMounted(() => {
       <div v-for="item in menuItems" :key="item.id" class="menu-card">
         <div class="image-wrapper">
           <img :src="item.imageUrl" :alt="item.name" class="menu-image" loading="lazy" />
-          <span class="badge" :class="item.itemType.toLowerCase().replace(' ', '-')">{{ item.itemType }}</span>
+          <span v-if="item.category" class="badge" :class="item.category.categoryName.toLowerCase().replace(' ', '-')">
+            {{ item.category.categoryName }}
+          </span>
         </div>
         <div class="menu-info">
           <div class="title-row">
