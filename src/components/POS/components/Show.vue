@@ -18,8 +18,18 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface Category {
+  id: number;
+  categoryName: string;
+  imageUrl: string;
+  iconColor?: string;
+  isActive: boolean;
+}
+
 const menuItems = ref<MenuItem[]>([]);
+const categories = ref<Category[]>([]);
 const loading = ref(true);
+const loadingCategories = ref(true);
 const errorMsg = ref<string | null>(null);
 
 const fetchMenuItems = async () => {
@@ -43,7 +53,23 @@ const fetchMenuItems = async () => {
   }
 };
 
+const fetchCategories = async () => {
+  try {
+    const response = await axios.get<ApiResponse<Category[]>>('http://localhost:7444/api/categories', {
+      withCredentials: true
+    });
+    if (response.data.status === 1) {
+      categories.value = response.data.data.filter(c => c.isActive);
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+  } finally {
+    loadingCategories.value = false;
+  }
+};
+
 onMounted(() => {
+  fetchCategories();
   fetchMenuItems();
 });
 </script>
@@ -53,6 +79,17 @@ onMounted(() => {
     <div class="header">
       <h2>Delicious Menu</h2>
       <p>Discover our chef's finest creations</p>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="categories-section" v-if="!loadingCategories && categories.length > 0">
+      <div class="category-list">
+        <div v-for="category in categories" :key="category.id" class="category-card">
+          <img v-if="category.imageUrl" :src="category.imageUrl" :alt="category.categoryName" class="category-img" loading="lazy" />
+          <div v-else class="category-placeholder" :style="{ background: category.iconColor || '#e17055' }"></div>
+          <span class="category-name">{{ category.categoryName }}</span>
+        </div>
+      </div>
     </div>
     
     <!-- Loading State -->
@@ -150,6 +187,55 @@ onMounted(() => {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Categories Layout */
+.categories-section {
+  margin-bottom: 3rem;
+}
+
+.category-list {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding: 1rem 0.5rem;
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.category-list::-webkit-scrollbar {
+  display: none;
+}
+
+.category-card {
+  flex: 0 0 auto;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.3s ease;
+}
+.category-card:hover {
+  transform: translateY(-5px);
+}
+
+.category-img, .category-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border: 3px solid white;
+}
+
+.category-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  text-align: center;
 }
 
 /* Grid Layout */

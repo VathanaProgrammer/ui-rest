@@ -24,9 +24,18 @@ const displayOrder = ref('');
 const status       = ref<'active' | 'inactive'>('active');
 const iconColor    = ref('#3b82f6');
 const iconBg       = ref('#1e3a5f');
-const imageUrl     = ref('');        // NEW: image url field
-const isLoading    = ref(false);     // NEW: loading state while API call is in progress
-const errorMsg     = ref('');        // NEW: show error if API call fails
+const imageUrl     = ref('');        // For existing image URL or local preview
+const selectedFile = ref<File | null>(null); // NEW: hold the selected file
+const isLoading    = ref(false);     
+const errorMsg     = ref('');        
+
+const handleFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    selectedFile.value = target.files[0];
+    imageUrl.value = URL.createObjectURL(selectedFile.value);
+  }
+};
 
 
 
@@ -41,6 +50,7 @@ watch(
       status.value       = cat.status;
       iconColor.value    = cat.iconColor || '#3b82f6';
       imageUrl.value     = cat.imageUrl  || '';  // loads existing image into form
+      selectedFile.value = null; // reset file
     }
   },
   { immediate: true },
@@ -54,6 +64,7 @@ const reset = () => {
   iconColor.value    = '#3b82f6';
   iconBg.value       = '#1e3a5f';
   imageUrl.value     = '';
+  selectedFile.value = null;
   errorMsg.value     = '';
 };
 
@@ -67,13 +78,21 @@ const handleAdd = async () => {
   isLoading.value = true;
   errorMsg.value  = '';
   try {
-    // Send the fields your API expects — adjust field names to match your backend
-    const response = await api.post('/categories', {
-      categoryName: categoryName.value.trim(),
-      displayOrder: displayOrder.value.trim() || null,
-      isActive:     status.value === 'active',
-      iconColor:    iconColor.value,
-      imageUrl:     imageUrl.value.trim() || null,
+    const formData = new FormData();
+    formData.append('categoryName', categoryName.value.trim());
+    if (displayOrder.value.trim()) {
+      formData.append('displayOrder', displayOrder.value.trim());
+    }
+    formData.append('isActive', status.value === 'active' ? 'true' : 'false');
+    if (iconColor.value) {
+      formData.append('iconColor', iconColor.value);
+    }
+    if (selectedFile.value) {
+      formData.append('image', selectedFile.value);
+    }
+
+    const response = await api.post('/categories', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     });
 
     if (response.status === 1 && response.data) {
@@ -108,21 +127,27 @@ const handleUpdate = async () => {
   try {
     const rawOrder   = displayOrder.value != null ? String(displayOrder.value).trim() : '';
     const cleanOrder = rawOrder === '—' || rawOrder === '' 
-                       ? null 
-                       : Number(rawOrder);   // send as number not string
-    const cleanImage = imageUrl.value ? imageUrl.value.trim() : null;
+                       ? '' 
+                       : rawOrder;
 
-    const body = {
-      categoryName: categoryName.value.trim(),
-      displayOrder: cleanOrder,
-      isActive:     status.value === 'active',
-      iconColor:    iconColor.value || '#fff',
-      imageUrl:     cleanImage,
-    };
+    const formData = new FormData();
+    formData.append('categoryName', categoryName.value.trim());
+    if (cleanOrder) {
+      formData.append('displayOrder', cleanOrder);
+    }
+    formData.append('isActive', status.value === 'active' ? 'true' : 'false');
+    if (iconColor.value) {
+      formData.append('iconColor', iconColor.value);
+    }
+    if (selectedFile.value) {
+      formData.append('image', selectedFile.value);
+    }
 
-    console.log('PUT body:', body);
+    console.log('PUT FormData ready');
 
-    const response = await api.put(`/categories/${props.editCategory.id}`, body);
+    const response = await api.put(`/categories/${props.editCategory.id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
 
     if (response.status === 1) {
       const updated: Category = {
@@ -131,7 +156,7 @@ const handleUpdate = async () => {
         displayOrder: cleanOrder != null ? String(cleanOrder) : String(props.editCategory.displayOrder),
         status:       status.value,
         iconColor:    iconColor.value || '#fff',
-        imageUrl:     cleanImage || '',
+        imageUrl:     response.data?.imageUrl || imageUrl.value || '',
       };
       emit('update', updated);
       reset();
@@ -212,12 +237,12 @@ const handleSubmit = () => {
                <!-- URL input stacked beside preview -->
                 <div class="image-input-side">
                   <input
-                        v-model="imageUrl"
                         class="field-input"
-                        placeholder="https://example.com/image.png"
-                        type="url"
+                        type="file"
+                        accept="image/*"
+                        @change="handleFileChange"
                    />
-                   <span class="field-hint">Paste an image URL. Replaces the icon color when set.</span>
+                   <span class="field-hint">Select an image file from your computer.</span>
                 </div>
               </div>
             </div>
