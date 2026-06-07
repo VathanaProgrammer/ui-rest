@@ -9,7 +9,7 @@ export interface ApiResponse<T = any> {
 
 // Now let me explain what it does.
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7444/api'; // my ai is missed this path
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 // I defind a baseUrl which mean the url of our api backend so you don't need to type http://localhost everytime
 // but what the value of the baseUrl goes from ? 
 // Well this is the code that is an env file is .env.production
