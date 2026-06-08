@@ -100,7 +100,7 @@ export function useKDS() {
   };
 
   // SSE Realtime integration
-  const { connectStream } = useApiStream('/api', 'orders');
+  const { connectStream } = useApiStream('', 'orders');
   connectStream({
     'NEW_ORDER': (event) => {
         const orderData = JSON.parse(event.data);

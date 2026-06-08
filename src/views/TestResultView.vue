@@ -8,7 +8,7 @@ const connectionStatus = ref('Connected - Waiting for events...')
 
 const { showAlert } = useOrderAlert()
 
-const { connectStream } = useApiStream('/api', 'orders');
+const { connectStream } = useApiStream('', 'orders');
 connectStream({
   'newItem': (event) => {
     const newItemData = JSON.parse(event.data);

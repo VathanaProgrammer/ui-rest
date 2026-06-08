@@ -16,7 +16,7 @@ export function useApiStream<T>(baseUrl: string, endpoint: string) {
   const error = ref<string | null>(null)
   let eventSource: EventSource | null = null
 
-  const resourceUrl = `${baseUrl}/${endpoint}`
+  const resourceUrl = baseUrl ? `${baseUrl}/${endpoint}` : `/${endpoint}`
 
   // --- STANDARD API ROUTING & FETCHING ---
 
@@ -67,7 +67,8 @@ export function useApiStream<T>(baseUrl: string, endpoint: string) {
   const connectStream = (eventHandlers: EventHandlers<T> = {}) => {
     fetchData() // Always fetch initial state upon connecting
 
-    eventSource = new EventSource(`${resourceUrl}/stream`)
+    const envBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    eventSource = new EventSource(`${envBaseUrl}${resourceUrl}/stream`, { withCredentials: true })
     
     // Generic INIT fallback
     eventSource.addEventListener('INIT', (event: MessageEvent) => {

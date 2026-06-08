@@ -32,7 +32,7 @@ const errorMsg = ref<string | null>(null);
 const { showAlert } = useOrderAlert();
 
 // Use the reusable composable for SSE
-const { connectStream } = useApiStream('/api', 'orders');
+const { connectStream } = useApiStream('', 'orders');
 connectStream({
   'NEW_ORDER': (event) => {
     const orderData = JSON.parse(event.data);
