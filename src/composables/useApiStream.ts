@@ -1,5 +1,5 @@
 import { ref, type Ref, onUnmounted } from 'vue'
-import axios from 'axios'
+import { api } from '../utils/api'
 
 export type EventHandler<T> = (event: MessageEvent, listRef: Ref<T[]>) => void;
 export type EventHandlers<T> = Record<string, EventHandler<T>>;
@@ -22,8 +22,8 @@ export function useApiStream<T>(baseUrl: string, endpoint: string) {
 
   const fetchData = async (): Promise<void> => {
     try {
-      const response = await axios.get<T[]>(resourceUrl)
-      dataList.value = response.data
+      const response = await api.get<any>(resourceUrl)
+      dataList.value = response.data || response
     } catch (err) {
       error.value = `Failed to fetch ${endpoint} data.`
       console.error(err)
@@ -32,7 +32,7 @@ export function useApiStream<T>(baseUrl: string, endpoint: string) {
 
   const createItem = async (payload: any): Promise<void> => {
     try {
-      await axios.post(resourceUrl, payload)
+      await api.post(resourceUrl, payload)
     } catch (err) {
       error.value = `Failed to create item in ${endpoint}.`
       console.error(err)
@@ -42,7 +42,7 @@ export function useApiStream<T>(baseUrl: string, endpoint: string) {
   const updateItem = async (id: string | number, actionPath: string = '', payload: any = {}): Promise<void> => {
     try {
       const url = actionPath ? `${resourceUrl}/${id}/${actionPath}` : `${resourceUrl}/${id}`
-      await axios.put(url, payload)
+      await api.put(url, payload)
     } catch (err) {
       error.value = `Failed to update item in ${endpoint}.`
       console.error(err)
@@ -51,7 +51,7 @@ export function useApiStream<T>(baseUrl: string, endpoint: string) {
 
   const deleteItem = async (id: string | number): Promise<void> => {
     try {
-      await axios.delete(`${resourceUrl}/${id}`)
+      await api.delete(`${resourceUrl}/${id}`)
     } catch (err) {
       error.value = `Failed to delete item in ${endpoint}.`
       console.error(err)

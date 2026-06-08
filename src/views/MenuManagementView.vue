@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
+import { api } from '../utils/api';
 
 type MenuManagementItem = {
   id: number;
@@ -61,21 +62,31 @@ const newModifier = ref({ name: '', price: 0 });
 const showModifierInput = ref(false);
 const isDragging = ref(false);
 
-const defaultItems: MenuManagementItem[] = [
-  { id: 1, name: 'Classic Double Burger', description: 'Angus beef, cheddar, house sauce, pickles, and crisp lettuce.', price: 18.5, category: 'Mains', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80', status: 'In Stock', sku: 'MM-0001' },
-  { id: 2, name: 'Neon Wings (12pc)', description: 'Spicy glazed chicken wings with cooling ranch dip.', price: 14.0, category: 'Appetizers', image: 'https://images.unsplash.com/photo-1510626176961-4b3b1112d1c1?w=400&q=80', status: 'Low Stock', sku: 'MM-0002' },
-  { id: 3, name: 'Artisan Pizza', description: 'Hand-tossed crust, fresh mozzarella, and basil.', price: 22.0, category: 'Mains', image: 'https://images.unsplash.com/photo-1548365328-5c9c4f5fa50a?w=400&q=80', status: 'In Stock', sku: 'MM-0003' },
-  { id: 4, name: 'Lava Cake', description: 'Warm chocolate cake with molten center and vanilla cream.', price: 12.0, category: 'Desserts', image: 'https://images.unsplash.com/photo-1542826438-7b02ffd01a95?w=400&q=80', status: 'Sold Out', sku: 'MM-0004' },
-  { id: 5, name: 'Harvest Bowl', description: 'Quinoa, roasted vegetables, and tahini dressing.', price: 12.0, category: 'Mains', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80', status: 'In Stock', sku: 'MM-0005' },
-  { id: 6, name: 'Caesar Salad', description: 'Romaine, parmesan, croutons and house Caesar dressing.', price: 9.5, category: 'Sides', image: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400&q=80', status: 'In Stock', sku: 'MM-0006' },
-];
+const menuItems = ref<MenuManagementItem[]>([]);
 
-const saved = localStorage.getItem('menuItems');
-const menuItems = ref<MenuManagementItem[]>(saved ? JSON.parse(saved) : defaultItems);
+const fetchMenuItems = async () => {
+  try {
+    const res = await api.get<any>('/menu-items');
+    if (res.status === 1) {
+      menuItems.value = res.data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description || '',
+        price: item.price,
+        category: item.category?.categoryName || 'Mains',
+        image: item.imageUrl || 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400&q=80',
+        status: item.status === 'AVAILABLE' ? 'In Stock' : (item.status === 'LOW_STOCK' ? 'Low Stock' : 'Sold Out'),
+        sku: `MM-${String(item.id).padStart(4, '0')}`
+      }));
+    }
+  } catch (err) {
+    console.error('Failed to fetch menu items:', err);
+  }
+};
 
-watch(menuItems, (val) => {
-  localStorage.setItem('menuItems', JSON.stringify(val));
-}, { deep: true });
+onMounted(() => {
+  fetchMenuItems();
+});
 
 const filteredMenuItems = computed(() => {
   return menuItems.value.filter((item) => {
@@ -111,7 +122,11 @@ function toggleSelectAll() {
   else selectedItems.value = paginatedItems.value.map((i) => i.id);
 }
 function deleteItem(id: number) {
-  menuItems.value = menuItems.value.filter((i) => i.id !== id);
+  if (confirm("Are you sure you want to delete this item?")) {
+    api.delete(`/menu-items/${id}`).then(() => {
+        menuItems.value = menuItems.value.filter((i) => i.id !== id);
+    }).catch(err => console.error(err));
+  }
 }
 
 function openEditModal(item: MenuManagementItem) {
@@ -119,33 +134,45 @@ function openEditModal(item: MenuManagementItem) {
   showEditItemModal.value = true;
 }
 
-function saveEditItem() {
+async function saveEditItem() {
   if (!editItem.value.name.trim()) return;
-  menuItems.value = menuItems.value.map((i) =>
-    i.id === editItem.value.id ? { ...editItem.value } : i
-  );
-  showEditItemModal.value = false;
+  const backendStatus = editItem.value.status === 'In Stock' ? 'AVAILABLE' : (editItem.value.status === 'Low Stock' ? 'LOW_STOCK' : 'OUT_OF_STOCK');
+  
+  try {
+      await api.put(`/menu-items/${editItem.value.id}`, {
+          name: editItem.value.name,
+          description: editItem.value.description,
+          price: editItem.value.price,
+          status: backendStatus,
+          imageUrl: editItem.value.image,
+          categoryId: 1 // Needs a real category ID in a full implementation
+      });
+      await fetchMenuItems();
+      showEditItemModal.value = false;
+  } catch (err) {
+      console.error(err);
+  }
 }
 
-function addNewItem() {
+async function addNewItem() {
   if (!newItem.value.name.trim()) return;
-  const nextId = Math.max(...menuItems.value.map((i) => i.id), 0) + 1;
-  const sku = newItem.value.sku.trim() || `MM-${String(nextId).padStart(4, '0')}`;
-  menuItems.value = [
-    ...menuItems.value,
-    {
-      id: nextId,
-      name: newItem.value.name.trim(),
-      description: newItem.value.description.trim(),
-      price: Number(newItem.value.price) || 0,
-      category: newItem.value.category,
-      image: newItem.value.image.trim() || 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400&q=80',
-      status: newItem.value.status,
-      sku,
-    },
-  ];
-  showAddItemModal.value = false;
-  resetNewItem();
+  const backendStatus = newItem.value.status === 'In Stock' ? 'AVAILABLE' : (newItem.value.status === 'Low Stock' ? 'LOW_STOCK' : 'OUT_OF_STOCK');
+
+  try {
+      await api.post(`/menu-items`, {
+          name: newItem.value.name,
+          description: newItem.value.description,
+          price: newItem.value.price,
+          status: backendStatus,
+          imageUrl: newItem.value.image,
+          categoryId: 1 // Default to 1, should ideally be mapped to selected category
+      });
+      await fetchMenuItems();
+      showAddItemModal.value = false;
+      resetNewItem();
+  } catch(err) {
+      console.error(err);
+  }
 }
 
 function resetNewItem() {
