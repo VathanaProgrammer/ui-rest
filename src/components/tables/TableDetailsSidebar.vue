@@ -20,7 +20,8 @@ const isCollapsed = ref(true);
       v-if="table"
       @click="isCollapsed = !isCollapsed" 
       class="absolute -left-3 top-6 bg-blue-600 rounded-full p-1 text-white hover:bg-blue-500 transition shadow-lg z-50">
-      <component :is="isCollapsed ? 'ChevronLeft' : 'ChevronRight'" class="w-4 h-4" />
+      <ChevronLeft v-if="isCollapsed" class="w-4 h-4" />
+      <ChevronRight v-else class="w-4 h-4" />
     </button>
 
     <div v-if="!table" class="flex-1 flex items-center justify-center text-slate-500 text-center px-2">
