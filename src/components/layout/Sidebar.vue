@@ -12,6 +12,7 @@ import {
     Clock,
     ChevronLeft,
     ChevronRight,
+    LayoutDashboard,
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ref } from 'vue';
@@ -24,6 +25,7 @@ const router = useRouter();
 const { logout } = useLogin();
 
 const navItems = [
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'POS', path: '/pos', icon: MonitorSmartphone },
   { name: 'KDS', path: '/kds', icon: ChefHat },
   { name: 'Menu Management', path: '/menu-management', icon: ListChecks },

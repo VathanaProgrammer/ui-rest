@@ -36,9 +36,14 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     component: DashboardLayout,
-    redirect: '/tables',
+    redirect: '/dashboard',
     meta: { requiresAuth: true },
     children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/DashboardView.vue'),
+      },
       {
         path: 'tables',
         name: 'Tables',
