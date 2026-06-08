@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { X, Printer, Ban, User } from 'lucide-vue-next';
+import { X, Printer, Ban, User, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { ref } from 'vue';
 import type { Table } from '../../types';
 
 defineProps<{
@@ -7,40 +8,52 @@ defineProps<{
 }>();
 
 defineEmits(['close']);
+
+const isCollapsed = ref(false);
 </script>
 
 <template>
-  <div class="w-80 bg-[#0f172a] border-l border-[#1e293b] flex flex-col h-full">
-    <div v-if="!table" class="flex-1 flex items-center justify-center text-slate-500">
-      Select a table
+  <div :class="['bg-[#0f172a] border-l border-[#1e293b] flex flex-col h-full relative transition-all duration-300', isCollapsed ? 'w-12' : 'w-80']">
+    
+    <!-- Collapse Toggle -->
+    <button 
+      v-if="table"
+      @click="isCollapsed = !isCollapsed" 
+      class="absolute -left-3 top-6 bg-blue-600 rounded-full p-1 text-white hover:bg-blue-500 transition shadow-lg z-50">
+      <component :is="isCollapsed ? 'ChevronLeft' : 'ChevronRight'" class="w-4 h-4" />
+    </button>
+
+    <div v-if="!table" class="flex-1 flex items-center justify-center text-slate-500 text-center px-2">
+      <span v-if="!isCollapsed">Select a table</span>
+      <span v-else>...</span>
     </div>
     
     <template v-else>
       <!-- Header -->
-      <div class="p-6 border-b border-[#1e293b]">
-        <div class="flex justify-between items-start mb-4">
-          <h2 class="text-white font-semibold text-lg">Table Details</h2>
-          <button @click="$emit('close')" class="text-slate-400 hover:text-white transition-colors">
+      <div class="p-6 border-b border-[#1e293b]" :class="{'p-3': isCollapsed}">
+        <div class="flex justify-between items-start mb-4" :class="{'flex-col items-center gap-2': isCollapsed}">
+          <h2 v-if="!isCollapsed" class="text-white font-semibold text-lg">Table Details</h2>
+          <button v-if="!isCollapsed" @click="$emit('close')" class="text-slate-400 hover:text-white transition-colors">
             <X class="w-5 h-5" />
           </button>
         </div>
         
-        <div class="bg-[#1e293b] rounded-xl p-4 flex justify-between items-center border border-slate-700/50">
-          <div>
-            <div class="text-red-500 font-bold text-2xl mb-1">{{ table.number }}</div>
-            <div class="text-slate-400 text-[13px] leading-relaxed mt-2">
+        <div class="bg-[#1e293b] rounded-xl p-4 flex justify-between items-center border border-slate-700/50" :class="{'p-2 justify-center': isCollapsed}">
+          <div :class="{'text-center': isCollapsed}">
+            <div class="text-red-500 font-bold text-2xl mb-1" :class="{'text-lg': isCollapsed}">{{ table.number }}</div>
+            <div v-if="!isCollapsed" class="text-slate-400 text-[13px] leading-relaxed mt-2">
               <div>Current Guests: {{ table.guests || 0 }} /</div>
               <div>Max Capacity: {{ table.capacity }}</div>
             </div>
           </div>
-          <div v-if="table.waitTime" class="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-1 rounded">
+          <div v-if="table.waitTime && !isCollapsed" class="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-1 rounded">
             {{ table.waitTime }}m
           </div>
         </div>
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-auto p-6">
+      <div v-if="!isCollapsed" class="flex-1 overflow-auto p-6">
         <!-- Current Order -->
         <div class="mb-8">
           <h3 class="text-slate-400 text-xs font-semibold tracking-widest uppercase mb-4">Current Order</h3>
@@ -77,7 +90,7 @@ defineEmits(['close']);
       </div>
 
       <!-- Footer Actions -->
-      <div class="p-6 border-t border-[#1e293b] space-y-3 bg-[#0b1121]">
+      <div v-if="!isCollapsed" class="p-6 border-t border-[#1e293b] space-y-3 bg-[#0b1121]">
         <button class="w-full bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
           <Printer class="w-5 h-5" />
           Print Bill
