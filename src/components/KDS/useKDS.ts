@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Order, OrderStatus } from './types';
 import { api } from '../../utils/api';
-import { useRealTime } from '../../composables/useRealTime';
+import { useApiStream } from '../../composables/useApiStream';
 import { useOrderAlert } from '../../composables/useOrderAlert';
 
 export function useKDS() {
@@ -100,23 +100,32 @@ export function useKDS() {
   };
 
   // SSE Realtime integration
-  useRealTime('/test/stream', {
-    'NEW_ORDER': (orderData) => {
+  const { connectStream } = useApiStream('/api', 'orders');
+  connectStream({
+    'NEW_ORDER': (event) => {
+        const orderData = JSON.parse(event.data);
         // Add new order to KDS if it's not already there
         if (!activeOrders.value.find(o => o.id === orderData.id)) {
             activeOrders.value.unshift(mapBackendOrder(orderData));
             showAlert({
                 title: 'New Kitchen Ticket',
                 table: orderData.tableNo,
-                orderType: orderData.orderType,
-                orderName: orderData.customerName || 'Customer',
-                playSound: true
+                orderName: `Order #${orderData.id} just arrived.`
             });
         }
     },
-    'ORDER_STATUS_UPDATED': (orderData) => {
-        if (orderData.status === 'DELIVERED' || orderData.status === 'CANCELLED') {
+    'ORDER_STATUS_UPDATED': (event) => {
+        const orderData = JSON.parse(event.data);
+        // Remove from KDS if it was marked as ready/delivered elsewhere
+        if (orderData.status === 'READY' || orderData.status === 'DELIVERED') {
             activeOrders.value = activeOrders.value.filter(o => o.id !== orderData.id);
+            return;
+        }
+        
+        // Otherwise update if we have it
+        const index = activeOrders.value.findIndex(o => o.id === orderData.id);
+        if (index !== -1) {
+            activeOrders.value[index] = mapBackendOrder(orderData);
         }
     }
   });

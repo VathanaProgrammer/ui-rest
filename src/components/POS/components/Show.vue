@@ -32,7 +32,7 @@ const errorMsg = ref<string | null>(null);
 const { showAlert } = useOrderAlert();
 
 // Use the reusable composable for SSE
-useRealTime('/test/stream', {
+useRealTime('/orders/stream', {
   'NEW_ORDER': (orderData) => {
     console.log('Real-time new order received:', orderData);
     showAlert({

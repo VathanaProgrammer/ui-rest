@@ -1,34 +1,34 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useOrderAlert } from '../composables/useOrderAlert'
-import { useRealTime } from '../composables/useRealTime'
+import { useApiStream } from '../composables/useApiStream'
 
 const items = ref<string[]>([])
 const connectionStatus = ref('Connected - Waiting for events...')
 
 const { showAlert } = useOrderAlert()
 
-// Use our new highly reusable real-time hook!
-useRealTime('/test/stream', {
-  
-  // You just list the events you want to listen to and what to do!
-  'newItem': (newItemData: string) => {
-    items.value.unshift(newItemData) // Add to top of list
-    
-    // Trigger global order alert
+const { connectStream } = useApiStream('/api', 'orders');
+connectStream({
+  'newItem': (event) => {
+    const newItemData = JSON.parse(event.data);
+    items.value.unshift(newItemData)
+    console.log('Got SSE Event:', newItemData)
     showAlert({
-      title: 'New Guest Booking',
-      timeText: 'JUST NOW',
-      table: 'T-04',
-      guests: 2,
-      orderType: 'PRE-ORDER',
-      orderName: newItemData,
-      actionLabel: 'VIEW ORDER',
-      playSound: true, 
-      onAction: () => console.log('Viewing order:', newItemData)
+      title: 'New Incoming Data',
+      table: 'System',
+      orderName: newItemData
+    })
+  },
+  'NEW_ORDER': (event) => {
+    const orderData = JSON.parse(event.data);
+    console.log('Real-time new order received:', orderData)
+    showAlert({
+      title: 'New Order Created!',
+      table: orderData.tableNo,
+      orderName: `Type: ${orderData.orderType} | Total Items: ${orderData.items.length}`
     })
   }
-  
 })
 </script>
 
