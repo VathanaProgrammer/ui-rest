@@ -329,10 +329,9 @@ const handleSubmit = () => {
 }
 
 .preview-img {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 0.3rem;
 }
 
 /* Spinner for loading state */
