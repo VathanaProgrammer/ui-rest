@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRealTime } from '../../../composables/useRealTime';
+import { useApiStream } from '../../../composables/useApiStream';
 import { useOrderAlert } from '../../../composables/useOrderAlert';
 import { api, type ApiResponse } from '../../../utils/api';
 import Skeleton from '../../ui/Skeleton.vue';
@@ -32,8 +32,10 @@ const errorMsg = ref<string | null>(null);
 const { showAlert } = useOrderAlert();
 
 // Use the reusable composable for SSE
-useRealTime('/orders/stream', {
-  'NEW_ORDER': (orderData) => {
+const { connectStream } = useApiStream('/api', 'orders');
+connectStream({
+  'NEW_ORDER': (event) => {
+    const orderData = JSON.parse(event.data);
     console.log('Real-time new order received:', orderData);
     showAlert({
       title: 'New Order Placed!',
