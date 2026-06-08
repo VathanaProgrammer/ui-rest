@@ -19,7 +19,8 @@ type Modifier = {
   price: number;
 };
 
-const CATEGORIES = ['All Items', 'Mains', 'Appetizers', 'Desserts', 'Drinks', 'Sides'];
+const categoriesFromApi = ref<any[]>([]);
+const CATEGORIES = computed(() => ['All Items', ...categoriesFromApi.value.map(c => c.categoryName)]);
 const statuses = ['All Statuses', 'In Stock', 'Low Stock', 'Sold Out'];
 const priceRanges = ['All Prices', '< $10', '$10 - $20', '> $20'];
 
@@ -34,7 +35,7 @@ const selectedItems = ref<number[]>([]);
 const currentPage = ref(1);
 const itemsPerPage = 4;
 
-const categoryOptions = computed(() => CATEGORIES.filter((c) => c !== 'All Items'));
+const categoryOptions = computed(() => CATEGORIES.value.filter((c: string) => c !== 'All Items'));
 
 const newItem = ref({
   name: '',
@@ -84,7 +85,19 @@ const fetchMenuItems = async () => {
   }
 };
 
+const fetchCategories = async () => {
+    try {
+        const res = await api.get<any>('/categories');
+        if (res.status === 1) {
+            categoriesFromApi.value = res.data;
+        }
+    } catch(err) {
+        console.error(err);
+    }
+}
+
 onMounted(() => {
+  fetchCategories();
   fetchMenuItems();
 });
 
@@ -139,13 +152,14 @@ async function saveEditItem() {
   const backendStatus = editItem.value.status === 'In Stock' ? 'AVAILABLE' : (editItem.value.status === 'Low Stock' ? 'LOW_STOCK' : 'OUT_OF_STOCK');
   
   try {
+      const targetCategory = categoriesFromApi.value.find(c => c.categoryName === editItem.value.category);
       await api.put(`/menu-items/${editItem.value.id}`, {
           name: editItem.value.name,
           description: editItem.value.description,
           price: editItem.value.price,
           status: backendStatus,
           imageUrl: editItem.value.image,
-          categoryId: 1 // Needs a real category ID in a full implementation
+          categoryId: targetCategory ? targetCategory.id : 1
       });
       await fetchMenuItems();
       showEditItemModal.value = false;
@@ -159,13 +173,14 @@ async function addNewItem() {
   const backendStatus = newItem.value.status === 'In Stock' ? 'AVAILABLE' : (newItem.value.status === 'Low Stock' ? 'LOW_STOCK' : 'OUT_OF_STOCK');
 
   try {
+      const targetCategory = categoriesFromApi.value.find(c => c.categoryName === newItem.value.category);
       await api.post(`/menu-items`, {
           name: newItem.value.name,
           description: newItem.value.description,
           price: newItem.value.price,
           status: backendStatus,
           imageUrl: newItem.value.image,
-          categoryId: 1 // Default to 1, should ideally be mapped to selected category
+          categoryId: targetCategory ? targetCategory.id : 1
       });
       await fetchMenuItems();
       showAddItemModal.value = false;
@@ -176,7 +191,7 @@ async function addNewItem() {
 }
 
 function resetNewItem() {
-  newItem.value = { name: '', category: categoryOptions.value[0], price: 0, status: 'In Stock', description: '', image: '', sku: '' };
+  newItem.value = { name: '', category: categoryOptions.value[0] || '', price: 0, status: 'In Stock', description: '', image: '', sku: '' };
   modifiers.value = [];
   newModifier.value = { name: '', price: 0 };
   showModifierInput.value = false;
