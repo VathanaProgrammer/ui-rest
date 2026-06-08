@@ -8,8 +8,10 @@ import { api } from '../utils/api';
 
 const tables = ref<Table[]>([]);
 const selectedTable = ref<Table | null>(null);
+const loading = ref(true);
 
 const fetchTables = async () => {
+  loading.value = true;
   try {
     const response = await api.get<any>('/dining-tables');
     if (response.status === 1) {
@@ -25,6 +27,8 @@ const fetchTables = async () => {
     }
   } catch (err) {
     console.error('Failed to fetch tables:', err);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -45,6 +49,7 @@ const handleTableSelect = (table: Table) => {
       <TableMap 
         :tables="tables" 
         :selectedTableId="selectedTable?.id || null"
+        :loading="loading"
         @select="handleTableSelect"
       />
     </div>

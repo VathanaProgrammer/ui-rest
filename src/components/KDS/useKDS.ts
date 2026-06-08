@@ -7,6 +7,7 @@ import { useOrderAlert } from '../../composables/useOrderAlert';
 export function useKDS() {
   const activeOrders = ref<Order[]>([]);
   const currentTime = ref('');
+  const loading = ref(true);
 
   // ── Clock ──────────────────────────────────────────────
   let clockInterval: ReturnType<typeof setInterval>;
@@ -62,6 +63,7 @@ export function useKDS() {
   const { showAlert } = useOrderAlert();
 
   const fetchOrders = async () => {
+      loading.value = true;
       try {
           const res = await api.get<any>('/orders');
           if (res.status === 1) {
@@ -70,6 +72,8 @@ export function useKDS() {
           }
       } catch (e) {
           console.error(e);
+      } finally {
+          loading.value = false;
       }
   };
 
@@ -138,5 +142,6 @@ export function useKDS() {
     normalCount,
     bumpOrder,
     markReady,
+    loading
   };
 }

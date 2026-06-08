@@ -12,7 +12,42 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="member in staff" :key="member.id">
+        <!-- Loading Skeleton -->
+        <template v-if="loading">
+          <tr v-for="i in 4" :key="'skeleton-'+i">
+            <td>
+              <div class="member-cell">
+                <Skeleton class="avatar border-none" />
+                <div class="w-full flex flex-col gap-1.5">
+                  <Skeleton class="h-4 w-32" />
+                  <Skeleton class="h-3 w-16" />
+                </div>
+              </div>
+            </td>
+            <td><Skeleton class="h-6 w-24 rounded-md" /></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <Skeleton class="w-2 h-2 rounded-full" />
+                <Skeleton class="h-4 w-16" />
+              </div>
+            </td>
+            <td>
+              <Skeleton class="h-4 w-20 mb-1" />
+              <Skeleton class="h-3 w-24" />
+            </td>
+            <td><Skeleton class="h-4 w-32" /></td>
+            <td>
+              <div class="action-btns">
+                <Skeleton class="w-[72px] h-[26px] rounded-md" />
+                <Skeleton class="w-[64px] h-[26px] rounded-md" />
+                <Skeleton class="w-[78px] h-[26px] rounded-md" />
+              </div>
+            </td>
+          </tr>
+        </template>
+
+        <template v-else>
+          <tr v-for="member in staff" :key="member.id">
           <td>
             <div class="member-cell">
               <img :src="member.avatar" :alt="member.name" class="avatar" />
@@ -70,6 +105,7 @@
             </div>
           </td>
         </tr>
+        </template>
       </tbody>
     </table>
 
@@ -91,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-//import { IconSettings, IconPencil, IconTrash } from '@tabler/icons-vue';
+import Skeleton from '../ui/Skeleton.vue';
 import type { StaffMember, StaffStatus } from './types';
 
 defineProps<{
@@ -99,6 +135,7 @@ defineProps<{
   totalStaff: number;
   currentPage: number;
   totalPages: number;
+  loading?: boolean;
 }>();
 
 defineEmits<{

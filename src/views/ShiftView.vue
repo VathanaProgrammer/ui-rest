@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { api } from '../utils/api';
+import Skeleton from '../components/ui/Skeleton.vue';
 
 const currentShift = ref<any>(null);
 const startingCash = ref<number>(0);
 const actualCash = ref<number>(0);
 const notes = ref<string>('');
 const loading = ref(false);
+const initialLoad = ref(true);
 
 const fetchCurrentShift = async () => {
+    initialLoad.value = true;
     try {
         const res = await api.get<any>('/shifts/current');
         if (res.status === 1 && res.data) {
@@ -18,6 +21,8 @@ const fetchCurrentShift = async () => {
         }
     } catch(err) {
         console.error(err);
+    } finally {
+        initialLoad.value = false;
     }
 }
 
@@ -61,7 +66,15 @@ onMounted(() => fetchCurrentShift());
         <h1 class="text-2xl font-bold text-white mb-6">Shift Management</h1>
         
         <div class="card p-6 bg-slate-900 border border-slate-800 rounded-2xl max-w-lg">
-            <div v-if="!currentShift">
+            <!-- Loading Skeleton -->
+            <div v-if="initialLoad">
+                <Skeleton class="h-6 w-48 mb-6" />
+                <Skeleton class="h-4 w-40 mb-3" />
+                <Skeleton class="h-12 w-full rounded-lg mb-4" />
+                <Skeleton class="h-12 w-full rounded-xl" />
+            </div>
+
+            <div v-else-if="!currentShift">
                 <h2 class="text-lg text-slate-200 mb-4 font-semibold">Start Your Shift</h2>
                 <div class="mb-4">
                     <label class="block text-slate-400 text-sm mb-2">Starting Cash Drawer ($)</label>

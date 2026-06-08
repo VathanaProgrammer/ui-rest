@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRealTime } from '../../../composables/useRealTime';
 import { useOrderAlert } from '../../../composables/useOrderAlert';
 import { api, type ApiResponse } from '../../../utils/api';
+import Skeleton from '../../ui/Skeleton.vue';
 
 // 1. Create the interface for the menu item response
 interface MenuItem {
@@ -89,8 +90,18 @@ onMounted(() => {
       <p>Discover our chef's finest creations</p>
     </div>
 
+    <!-- Categories Skeleton -->
+    <div class="categories-section" v-if="loadingCategories">
+      <div class="category-list">
+        <div v-for="i in 6" :key="i" class="category-card">
+          <Skeleton class="w-[80px] h-[80px] rounded-full border-3 border-white shadow-[0_4px_15px_rgba(0,0,0,0.1)]" />
+          <Skeleton class="h-4 w-16 mt-2" />
+        </div>
+      </div>
+    </div>
+
     <!-- Categories Section -->
-    <div class="categories-section" v-if="!loadingCategories && categories.length > 0">
+    <div class="categories-section" v-else-if="categories.length > 0">
       <div class="category-list">
         <div v-for="category in categories" :key="category.id" class="category-card">
           <img v-if="category.imageUrl" :src="category.imageUrl" :alt="category.categoryName" class="category-img" loading="lazy" />
@@ -100,10 +111,19 @@ onMounted(() => {
       </div>
     </div>
     
-    <!-- Loading State -->
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Preparing your menu...</p>
+    <!-- Loading State for Menu Items -->
+    <div v-if="loading" class="menu-grid">
+      <div v-for="i in 8" :key="i" class="menu-card border border-slate-100">
+        <Skeleton class="w-full h-[220px] rounded-none" />
+        <div class="p-6 flex flex-col gap-4">
+          <div class="flex justify-between">
+            <Skeleton class="h-6 w-3/5" />
+            <Skeleton class="h-6 w-1/5" />
+          </div>
+          <Skeleton class="h-5 w-24 rounded-full" />
+          <Skeleton class="h-12 w-full mt-4 rounded-xl" />
+        </div>
+      </div>
     </div>
 
     <!-- Error State -->

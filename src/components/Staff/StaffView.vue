@@ -24,6 +24,7 @@
       :total-staff="totalStaff"
       :current-page="currentPage"
       :total-pages="totalPages"
+      :loading="loading"
       @page="goToPage"
       @manage="handleManage"
       @edit="handleEdit"
@@ -78,6 +79,7 @@ const {
   addStaff,
   removeStaff,
   updateStaff,
+  loading,
 } = useStaff();
 
 const showAddModal    = ref(false);

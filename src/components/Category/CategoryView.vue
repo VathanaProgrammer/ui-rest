@@ -16,9 +16,11 @@ const showModal    = ref(false);
 const editCategory = ref<Category | null>(null);
 const currentPage  = ref(1);
 const categories   = ref<Category[]>([]);
+const loading      = ref(true);
 
 // ── API: Fetch all categories ─────────────────────────────────────────
 const getCategories = async () => {
+  loading.value = true;
   try {
     const response = await api.get('/categories');
     if (response.status === 1 && Array.isArray(response.data)) {
@@ -35,6 +37,8 @@ const getCategories = async () => {
     }
   } catch (err) {
     console.error('Failed to fetch categories:', err);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -172,6 +176,7 @@ const handleClose = () => {
     <div class="table-card">
       <CategoryTable
         :categories="pagedCategories"
+        :loading="loading"
         @edit="handleEdit"
         @delete="handleDelete"
         @toggle-status="handleToggleStatus"

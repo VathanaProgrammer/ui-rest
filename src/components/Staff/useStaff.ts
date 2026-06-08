@@ -24,8 +24,15 @@ const ROLE_MAP: Record<number, string> = {
 };
 
 export function useStaff() {
-  const allStaff    = ref<StaffMember[]>([...mockStaff]);
+  const allStaff    = ref<StaffMember[]>([]);
   const currentPage = ref(1);
+  const loading     = ref(true);
+
+  // Simulate API fetch
+  setTimeout(() => {
+    allStaff.value = [...mockStaff];
+    loading.value = false;
+  }, 800);
 
   const totalStaff = computed(() => allStaff.value.length);
   const totalPages = computed(() => Math.ceil(totalStaff.value / PAGE_SIZE));
@@ -100,5 +107,6 @@ export function useStaff() {
     addStaff,
     removeStaff,
     updateStaff,
+    loading,
   };
 }

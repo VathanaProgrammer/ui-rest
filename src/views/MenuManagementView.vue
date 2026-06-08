@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { api } from '../utils/api';
+import Skeleton from '../components/ui/Skeleton.vue';
 
 type MenuManagementItem = {
   id: number;
@@ -64,8 +65,10 @@ const showModifierInput = ref(false);
 const isDragging = ref(false);
 
 const menuItems = ref<MenuManagementItem[]>([]);
+const loading = ref(true);
 
 const fetchMenuItems = async () => {
+  loading.value = true;
   try {
     const res = await api.get<any>('/menu-items');
     if (res.status === 1) {
@@ -82,6 +85,8 @@ const fetchMenuItems = async () => {
     }
   } catch (err) {
     console.error('Failed to fetch menu items:', err);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -282,7 +287,27 @@ function statusDot(status: MenuManagementItem['status']) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in paginatedItems" :key="item.id" class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors group">
+          <!-- Loading Skeleton -->
+          <template v-if="loading">
+            <tr v-for="i in 5" :key="'skeleton-'+i" class="border-b border-slate-800/50">
+              <td class="px-4 py-3.5"><Skeleton class="w-3.5 h-3.5 rounded" /></td>
+              <td class="px-4 py-3.5"><Skeleton class="w-12 h-10 rounded-xl" /></td>
+              <td class="px-4 py-3.5">
+                <Skeleton class="h-4 w-32 mb-1" />
+                <Skeleton class="h-3 w-16" />
+              </td>
+              <td class="px-4 py-3.5"><Skeleton class="h-4 w-20 rounded-full" /></td>
+              <td class="px-4 py-3.5"><Skeleton class="h-4 w-12" /></td>
+              <td class="px-4 py-3.5"><Skeleton class="h-6 w-20 rounded-full" /></td>
+              <td class="px-4 py-3.5 flex items-center justify-end gap-3">
+                <Skeleton class="w-8 h-8 rounded-lg" />
+                <Skeleton class="w-8 h-8 rounded-lg" />
+              </td>
+            </tr>
+          </template>
+
+          <template v-else>
+            <tr v-for="item in paginatedItems" :key="item.id" class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors group">
             <td class="px-4 py-3.5">
               <input type="checkbox" :checked="selectedItems.includes(item.id)" @change="toggleSelect(item.id)" class="rounded border-slate-700 bg-slate-800 w-3.5 h-3.5 accent-indigo-500 cursor-pointer" />
             </td>
@@ -316,6 +341,7 @@ function statusDot(status: MenuManagementItem['status']) {
               </div>
             </td>
           </tr>
+          </template>
         </tbody>
       </table>
     </div>

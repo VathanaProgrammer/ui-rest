@@ -54,10 +54,12 @@ defineEmits<{
 </template> -->
 <script setup lang="ts">
 import CategoryTableRow from './CategoryTableRow.vue';
+import Skeleton from '../ui/Skeleton.vue';
 import type { Category } from './types';
 
 defineProps<{
   categories: Category[];
+  loading?: boolean;
 }>();
 
 defineEmits<{
@@ -81,14 +83,38 @@ defineEmits<{
         </tr>
       </thead>
       <tbody>
-        <CategoryTableRow
-          v-for="cat in categories"
-          :key="cat.id"
-          :category="cat"
-          @edit="$emit('edit', $event)"
-          @delete="$emit('delete', $event)"
-          @toggle-status="$emit('toggle-status', $event)"
-        />
+        <!-- Loading Skeleton -->
+        <template v-if="loading">
+          <tr v-for="i in 5" :key="'skeleton-'+i" style="border-bottom: 1px solid #1e293b;">
+            <td style="padding: 1rem;"><Skeleton class="w-4 h-4 rounded" /></td>
+            <td style="padding: 1rem;">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <Skeleton class="w-10 h-10 rounded-full" />
+                <Skeleton class="h-4 w-32" />
+              </div>
+            </td>
+            <td style="padding: 1rem; text-align: center;"><Skeleton class="h-4 w-8 mx-auto" /></td>
+            <td style="padding: 1rem;"><Skeleton class="h-6 w-20 rounded-full" /></td>
+            <td style="padding: 1rem; text-align: center;"><Skeleton class="h-4 w-8 mx-auto" /></td>
+            <td style="padding: 1rem;">
+              <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <Skeleton class="w-8 h-8 rounded" />
+                <Skeleton class="w-8 h-8 rounded" />
+              </div>
+            </td>
+          </tr>
+        </template>
+
+        <template v-else>
+          <CategoryTableRow
+            v-for="cat in categories"
+            :key="cat.id"
+            :category="cat"
+            @edit="$emit('edit', $event)"
+            @delete="$emit('delete', $event)"
+            @toggle-status="$emit('toggle-status', $event)"
+          />
+        </template>
       </tbody>
     </table>
   </div>
