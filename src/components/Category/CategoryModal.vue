@@ -26,6 +26,7 @@ const iconColor    = ref('#3b82f6');
 const iconBg       = ref('#1e3a5f');
 const imageUrl     = ref('');        // For existing image URL or local preview
 const selectedFile = ref<File | null>(null); // NEW: hold the selected file
+const fileInput    = ref<HTMLInputElement | null>(null);
 const isLoading    = ref(false);     
 const errorMsg     = ref('');        
 
@@ -216,12 +217,12 @@ const handleSubmit = () => {
               {{ errorMsg }}
             </div>
 
-           <!-- Image Upload / URL field -->
+            <!-- Image Upload / URL field -->
             <div class="field">
               <label class="field-label">IMAGE</label>
               <div class="image-field-row">
                 <!-- Preview box -->
-                <div class="image-preview-box" :style="{ background: iconBg }">
+                <div class="image-preview-box" :style="{ background: iconBg, cursor: 'pointer' }" @click="fileInput?.click()">
                   <img
                   v-if="imageUrl.trim()"
                   :src="imageUrl"
@@ -231,19 +232,17 @@ const handleSubmit = () => {
                   />
                   <div v-else class="preview-placeholder">
                     <Image class="placeholder-icon" :style="{ color: iconColor }" />
-                    <span class="placeholder-text">No image</span>
+                    <span class="placeholder-text">Upload</span>
                   </div>
                 </div>
-               <!-- URL input stacked beside preview -->
-                <div class="image-input-side">
-                  <input
-                        class="field-input"
-                        type="file"
-                        accept="image/*"
-                        @change="handleFileChange"
-                   />
-                   <span class="field-hint">Select an image file from your computer.</span>
-                </div>
+                <!-- Hidden file input -->
+                <input
+                  ref="fileInput"
+                  style="display: none;"
+                  type="file"
+                  accept="image/*"
+                  @change="handleFileChange"
+                />
               </div>
             </div>
 
