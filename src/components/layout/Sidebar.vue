@@ -17,7 +17,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { useLogin } from '../../composables/useLogin';
 
-const isCollapsed = ref(false);
+const isCollapsed = ref(true);
 
 const route = useRoute();
 const router = useRouter();
@@ -40,6 +40,7 @@ const handleLogout = () => {
 };
 </script>
 
+<template>
   <aside :class="['bg-[#0f172a] border-r border-[#1e293b] flex flex-col h-full text-slate-300 transition-all duration-300 relative', isCollapsed ? 'w-20' : 'w-64']">
     
     <!-- Collapse Toggle -->

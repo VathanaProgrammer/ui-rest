@@ -9,7 +9,7 @@ defineProps<{
 
 defineEmits(['close']);
 
-const isCollapsed = ref(false);
+const isCollapsed = ref(true);
 </script>
 
 <template>
