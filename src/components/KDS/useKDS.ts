@@ -1,9 +1,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Order, OrderStatus } from './types';
-import { mockOrders } from './mockOrders';
+import { api } from '../../utils/api';
+import { useRealTime } from '../../composables/useRealTime';
+import { useOrderAlert } from '../../composables/useOrderAlert';
 
 export function useKDS() {
-  const activeOrders = ref<Order[]>([...mockOrders]);
+  const activeOrders = ref<Order[]>([]);
   const currentTime = ref('');
 
   // ── Clock ──────────────────────────────────────────────
@@ -38,16 +40,86 @@ export function useKDS() {
   };
 
   // ── Actions ────────────────────────────────────────────
-  const bumpOrder  = (id: number) => { activeOrders.value = activeOrders.value.filter(o => o.id !== id); };
-  const markReady  = (id: number) => { activeOrders.value = activeOrders.value.filter(o => o.id !== id); };
+  const bumpOrder  = async (id: number) => { 
+      try {
+          await api.put(`/orders/${id}/status`, { status: 'READY' });
+          activeOrders.value = activeOrders.value.filter(o => o.id !== id); 
+      } catch(e) { console.error(e); }
+  };
+  const markReady  = async (id: number) => { 
+      try {
+          await api.put(`/orders/${id}/status`, { status: 'DELIVERED' });
+          activeOrders.value = activeOrders.value.filter(o => o.id !== id); 
+      } catch(e) { console.error(e); }
+  };
 
   // ── Stats ──────────────────────────────────────────────
   const overdueCount = computed(() => activeOrders.value.filter(o => o.status === 'overdue').length);
   const warningCount = computed(() => activeOrders.value.filter(o => o.status === 'warning').length);
   const normalCount  = computed(() => activeOrders.value.filter(o => o.status === 'normal' || o.status === 'new').length);
 
+  // ── Fetching & SSE ─────────────────────────────────────
+  const { showAlert } = useOrderAlert();
+
+  const fetchOrders = async () => {
+      try {
+          const res = await api.get<any>('/orders');
+          if (res.status === 1) {
+              const orders = res.data.filter((o: any) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED');
+              activeOrders.value = orders.map((o: any) => mapBackendOrder(o));
+          }
+      } catch (e) {
+          console.error(e);
+      }
+  };
+
+  const mapBackendOrder = (backendOrder: any): Order => {
+      const created = new Date(backendOrder.createdAt);
+      const now = new Date();
+      const secs = Math.floor((now.getTime() - created.getTime()) / 1000);
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+
+      return {
+          id: backendOrder.id,
+          ticket: backendOrder.tableNo || ('#' + backendOrder.id),
+          type: backendOrder.orderType.toLowerCase().includes('take') ? 'takeout' : 'dine-in',
+          elapsedSeconds: secs,
+          elapsed: `${m}:${s}`,
+          ...resolveStatus(secs),
+          items: backendOrder.items.map((i: any) => ({
+              qty: i.quantity,
+              name: i.menuItem?.name || 'Unknown',
+              modifier: i.modifiers
+          }))
+      };
+  };
+
+  // SSE Realtime integration
+  useRealTime('/test/stream', {
+    'NEW_ORDER': (orderData) => {
+        // Add new order to KDS if it's not already there
+        if (!activeOrders.value.find(o => o.id === orderData.id)) {
+            activeOrders.value.unshift(mapBackendOrder(orderData));
+            showAlert({
+                title: 'New Kitchen Ticket',
+                table: orderData.tableNo,
+                orderType: orderData.orderType,
+                orderName: orderData.customerName || 'Customer',
+                playSound: true
+            });
+        }
+    },
+    'ORDER_STATUS_UPDATED': (orderData) => {
+        if (orderData.status === 'DELIVERED' || orderData.status === 'CANCELLED') {
+            activeOrders.value = activeOrders.value.filter(o => o.id !== orderData.id);
+        }
+    }
+  });
+
   // ── Lifecycle ──────────────────────────────────────────
   onMounted(() => {
+    fetchOrders();
     updateClock();
     clockInterval = setInterval(updateClock, 1000);
     timerInterval = setInterval(tickTimers, 1000);
