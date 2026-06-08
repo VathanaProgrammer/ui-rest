@@ -23,16 +23,40 @@ const ROLE_MAP: Record<number, string> = {
   8: 'Host',
 };
 
+import { api } from '../../utils/api';
+
 export function useStaff() {
   const allStaff    = ref<StaffMember[]>([]);
   const currentPage = ref(1);
   const loading     = ref(true);
 
-  // Simulate API fetch
-  setTimeout(() => {
-    allStaff.value = [...mockStaff];
-    loading.value = false;
-  }, 800);
+  const fetchStaff = async () => {
+    loading.value = true;
+    try {
+      const res = await api.get<any>('/staff');
+      if (res.status === 1) {
+        allStaff.value = res.data.map((u: any) => ({
+          id: String(u.id),
+          employeeId: u.employeeId,
+          name: u.fullName,
+          displayName: u.displayName,
+          role: u.role ? u.role.roleName : 'Unknown',
+          shift: 'Morning', // mocked as not in DB
+          shiftHours: '06:00 - 14:00',
+          email: u.emailAddress,
+          phoneNumber: u.phoneNumber,
+          avatar: u.avatarUrl,
+          status: u.currentStatus.toLowerCase(),
+        }));
+      }
+    } catch(e) {
+      console.error(e);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  fetchStaff();
 
   const totalStaff = computed(() => allStaff.value.length);
   const totalPages = computed(() => Math.ceil(totalStaff.value / PAGE_SIZE));
@@ -46,40 +70,36 @@ export function useStaff() {
     if (page >= 1 && page <= totalPages.value) currentPage.value = page;
   };
 
-  const addStaff = (payload: {
+  const addStaff = async (payload: {
     name: string;
-    displayName: string;    // API: displayName
-    role: number;           // API: role.id — resolved to label via ROLE_MAP
+    displayName: string;
+    role: number;
     shift: string;
-    email: string;          // API: emailAddress
-    phoneNumber: string;    // API: phoneNumber
-    employeeId: string;     // API: employeeId — auto-assigned if blank
-    accessPin: string;      // sent to API only; not stored on StaffMember
-    avatar: string;         // API: avatarUrl
-    status: StaffStatus;    // API: currentStatus (kebab; mapped to UPPER_SNAKE on POST)
+    email: string;
+    phoneNumber: string;
+    employeeId: string;
+    accessPin: string;
+    avatar: string;
+    status: StaffStatus;
   }) => {
-    // TODO: replace with actual POST /api/staff response data
-    const newMember: StaffMember = {
-      id:          `ST-${Date.now()}`,
-      employeeId:  payload.employeeId || `EMP-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`,
-      name:        payload.name,
-      displayName: payload.displayName,
-      role:        ROLE_MAP[payload.role] ?? 'Unknown',
-      shift:       payload.shift as StaffMember['shift'],
-      shiftHours:  SHIFT_HOURS[payload.shift] ?? '',
-      email:       payload.email,
-      phoneNumber: payload.phoneNumber,
-      avatar:      payload.avatar || '',
-      status:      payload.status,
-    };
-    allStaff.value.unshift(newMember);
-    currentPage.value = 1;
+    try {
+      const res = await api.post<any>('/staff', payload);
+      if (res.status === 1) {
+        await fetchStaff();
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const removeStaff = (id: string) => {
-    allStaff.value = allStaff.value.filter(s => s.id !== id);
-    if (currentPage.value > 1 && currentPage.value > Math.ceil(allStaff.value.length / PAGE_SIZE)) {
-      currentPage.value--;
+  const removeStaff = async (id: string) => {
+    try {
+      const res = await api.delete<any>(`/staff/${id}`);
+      if (res.status === 1) {
+        await fetchStaff();
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 

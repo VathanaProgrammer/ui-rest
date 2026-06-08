@@ -4,11 +4,13 @@ import Skeleton from '../ui/Skeleton.vue';
 
 defineProps<{
   tables: Table[];
+  floors?: string[];
+  activeFloor?: string;
   selectedTableId: string | null;
   loading?: boolean;
 }>();
 
-defineEmits(['select']);
+defineEmits(['select', 'change-floor']);
 
 const getBgColor = (status: string) => {
   switch (status) {
@@ -24,10 +26,17 @@ const getBgColor = (status: string) => {
 <template>
   <div class="relative w-full h-[600px] border border-[#1e293b] rounded-xl overflow-y-auto bg-[#0a0f1c] p-8 flex flex-col items-center">
     <!-- Top Filter Tabs -->
-    <div class="self-start bg-[#1e293b] rounded-lg p-1 flex shadow-lg mb-12">
-      <button class="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-md text-sm font-semibold">Main Dining</button>
-      <button class="text-slate-400 px-4 py-1.5 rounded-md text-sm font-medium hover:text-white transition-colors">Terrace</button>
-      <button class="text-slate-400 px-4 py-1.5 rounded-md text-sm font-medium hover:text-white transition-colors">Private Room</button>
+    <div v-if="floors && floors.length > 0" class="self-start bg-[#1e293b] rounded-lg p-1 flex shadow-lg mb-12">
+      <button 
+        v-for="floor in floors" 
+        :key="floor"
+        @click="$emit('change-floor', floor)"
+        :class="activeFloor === floor 
+          ? 'bg-blue-100 text-blue-800 px-4 py-1.5 rounded-md text-sm font-semibold'
+          : 'text-slate-400 px-4 py-1.5 rounded-md text-sm font-medium hover:text-white transition-colors'"
+      >
+        {{ floor }}
+      </button>
     </div>
 
     <!-- The Tables Grid -->
