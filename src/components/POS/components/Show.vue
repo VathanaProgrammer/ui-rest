@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import { useRealTime } from '../../../composables/useRealTime';
 import { useOrderAlert } from '../../../composables/useOrderAlert';
+import { useApiStream } from '../../../composables/useApiStream';
 
 // 1. Create the interface for the menu item response
 interface MenuItem {
@@ -50,40 +50,42 @@ useRealTime('/test/stream', {
   }
 });
 
+const { 
+  dataList: rawCategories, 
+  fetchData: fetchCategoriesData 
+} = useApiStream<any>('http://localhost:7444/api', 'categories');
+
+const { 
+  dataList: rawMenuItems, 
+  error: menuError,
+  fetchData: fetchMenuItemsData 
+} = useApiStream<any>('http://localhost:7444/api', 'menu-items');
+
 const fetchMenuItems = async () => {
   loading.value = true;
   errorMsg.value = null;
-  try {
-    const response = await axios.get<ApiResponse<MenuItem[]>>('http://localhost:7444/api/menu-items', {
-      withCredentials: true
-    });
-    
-    if (response.data.status === 1) {
-      menuItems.value = response.data.data;
-    } else {
-      errorMsg.value = response.data.message;
-    }
-  } catch (error: any) {
-    console.error('Error fetching menu items:', error);
-    errorMsg.value = error.message || 'Failed to load menu items';
-  } finally {
-    loading.value = false;
+  
+  await fetchMenuItemsData();
+  
+  if (menuError.value) {
+    errorMsg.value = menuError.value;
+  } else if ((rawMenuItems.value as any) && (rawMenuItems.value as any).data) {
+    menuItems.value = (rawMenuItems.value as any).data;
+  } else if ((rawMenuItems.value as any) && (rawMenuItems.value as any).status === 0) {
+    errorMsg.value = (rawMenuItems.value as any).message;
   }
+  
+  loading.value = false;
 };
 
 const fetchCategories = async () => {
-  try {
-    const response = await axios.get<ApiResponse<Category[]>>('http://localhost:7444/api/categories', {
-      withCredentials: true
-    });
-    if (response.data.status === 1) {
-      categories.value = response.data.data.filter(c => c.isActive);
-    }
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-  } finally {
-    loadingCategories.value = false;
+  await fetchCategoriesData();
+  
+  if ((rawCategories.value as any) && (rawCategories.value as any).data) {
+    categories.value = (rawCategories.value as any).data.filter((c: Category) => c.isActive);
   }
+  
+  loadingCategories.value = false;
 };
 
 onMounted(() => {
