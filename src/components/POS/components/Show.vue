@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Bell } from 'lucide-vue-next';
+import { useRealTime } from '../../../composables/useRealTime';
+import { useOrderAlert } from '../../../composables/useOrderAlert';
 
 // 1. Create the interface for the menu item response
 interface MenuItem {
@@ -33,38 +34,21 @@ const loading = ref(true);
 const loadingCategories = ref(true);
 const errorMsg = ref<string | null>(null);
 
-// Real-time Notification State
-const newOrderNotification = ref<any | null>(null);
-let notificationTimeout: number | null = null;
-let eventSource: EventSource | null = null;
+const { showAlert } = useOrderAlert();
 
-const setupRealtimeEvents = () => {
-  // Connect to the same base URL used for menu items
-  eventSource = new EventSource('http://localhost:7444/api/test/stream');
-
-  eventSource.addEventListener('NEW_ORDER', (event) => {
-    try {
-      const orderData = JSON.parse(event.data);
-      console.log('Real-time new order received:', orderData);
-      
-      // Show notification
-      newOrderNotification.value = orderData;
-      
-      // Auto-hide after 5 seconds
-      if (notificationTimeout) clearTimeout(notificationTimeout);
-      notificationTimeout = window.setTimeout(() => {
-        newOrderNotification.value = null;
-      }, 5000) as unknown as number;
-      
-    } catch (error) {
-      console.error('Error parsing SSE event data:', error);
-    }
-  });
-
-  eventSource.onerror = (error) => {
-    console.error('SSE connection error, attempting to reconnect...', error);
-  };
-};
+// Use the reusable composable for SSE
+useRealTime('/test/stream', {
+  'NEW_ORDER': (orderData) => {
+    console.log('Real-time new order received:', orderData);
+    showAlert({
+      title: 'New Order Placed!',
+      table: orderData.tableNo,
+      orderType: orderData.orderType,
+      orderName: orderData.customerName || 'A customer',
+      playSound: true
+    });
+  }
+});
 
 const fetchMenuItems = async () => {
   loading.value = true;
@@ -105,16 +89,6 @@ const fetchCategories = async () => {
 onMounted(() => {
   fetchCategories();
   fetchMenuItems();
-  setupRealtimeEvents();
-});
-
-onUnmounted(() => {
-  if (eventSource) {
-    eventSource.close();
-  }
-  if (notificationTimeout) {
-    clearTimeout(notificationTimeout);
-  }
 });
 </script>
 
@@ -179,25 +153,6 @@ onUnmounted(() => {
           </button>
         </div>
       </div>
-    </div>
-
-    <!-- Real-time Order Notification Toast -->
-    <div v-if="newOrderNotification" class="fixed bottom-6 right-6 bg-white border-l-4 border-green-500 shadow-2xl rounded-lg p-4 z-50 flex items-start gap-4 transform transition-all animate-slide-up max-w-sm">
-      <div class="bg-green-100 p-2 rounded-full">
-        <Bell class="w-6 h-6 text-green-600 animate-pulse" />
-      </div>
-      <div>
-        <h4 class="font-bold text-gray-800 text-sm">New Order Placed!</h4>
-        <p class="text-gray-600 text-xs mt-1">
-          <span class="font-semibold">{{ newOrderNotification.customerName || 'A customer' }}</span> just ordered for table <span class="font-semibold">{{ newOrderNotification.tableNo }}</span>.
-        </p>
-        <p class="text-xs text-gray-500 mt-2 font-mono">
-          {{ newOrderNotification.items?.length || 0 }} items • {{ newOrderNotification.orderType }}
-        </p>
-      </div>
-      <button @click="newOrderNotification = null" class="text-gray-400 hover:text-gray-600 ml-auto">
-        ✕
-      </button>
     </div>
   </div>
 </template>
@@ -450,19 +405,5 @@ onUnmounted(() => {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out forwards;
 }
 </style>
