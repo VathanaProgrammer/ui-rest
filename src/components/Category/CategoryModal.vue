@@ -437,8 +437,8 @@ const handleSubmit = () => {
 }
 
 .image-preview-box {
-  width: 90px;
-  height: 90px;
+  width: 100%;
+  height: 200px;
   flex-shrink: 0;
   border-radius: 0.6rem;
   overflow: hidden;

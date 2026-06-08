@@ -12,6 +12,7 @@ export function useLogin() {
   
   // Since tokens are HttpOnly cookies now, we just track if they are logged in via a simple localStorage flag
   const token = ref<string | null>(localStorage.getItem('isLoggedIn') ? 'true' : null)
+  const userRole = ref<string | null>(localStorage.getItem('userRole'))
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -35,6 +36,14 @@ export function useLogin() {
         token.value = 'true'
         localStorage.setItem('isLoggedIn', 'true')
         localStorage.setItem('employeeId', credentials.employeeId)
+        
+        // Save the role if it's returned in the data
+        if (response.data.data && response.data.data.role) {
+            const roleName = response.data.data.role.roleName;
+            userRole.value = roleName;
+            localStorage.setItem('userRole', roleName);
+        }
+        
         return true
       } else {
         error.value = response.data.message || 'Login failed. Please check your credentials.'
@@ -56,8 +65,10 @@ export function useLogin() {
 
   const logout = () => {
     token.value = null
+    userRole.value = null
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('employeeId')
+    localStorage.removeItem('userRole')
     error.value = null
   }
 
@@ -76,6 +87,7 @@ export function useLogin() {
     isAuthenticated,
     loading,
     error,
-    token
+    token,
+    userRole
   }
 }

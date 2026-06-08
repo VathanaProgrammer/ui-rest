@@ -54,16 +54,19 @@ const routes: Array<RouteRecordRaw> = [
         path: 'menu-management',
         name: 'MenuManagement',
         component: () => import('../views/MenuManagementView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
       {
         path: 'settings/menu',
         name: 'MenuSettings',
         component: () => import('../views/MenuManagementView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
       {
         path: 'kds',
         name: 'KDS',
-        component: () => import('../components/KDS/KDSView.vue')
+        component: () => import('../components/KDS/KDSView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER', 'KITCHEN'] }
       },
       {
         path: 'tracking',
@@ -75,6 +78,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'staff',
         name: 'Staff',
         component: () => import('../components/Staff/StaffView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
 
       // SettingView 
@@ -82,6 +86,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'settings',
         name: 'Settings',
         component: () => import('../views/SettingsView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
       // SupportView
       {
@@ -94,6 +99,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/category',
         name: 'Category',
         component: () => import('../components/Category/CategoryView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
       {
         path: "/show",
@@ -110,21 +116,32 @@ const router = createRouter({
   routes,
 });
 
-// Authentication guard
+// Authentication and RBAC guard
 router.beforeEach((
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) => {
-  const { isAuthenticated } = useLogin();
+  const { isAuthenticated, userRole } = useLogin();
   const requiresAuth = to.meta.requiresAuth !== false;
+  const allowedRoles = to.meta.roles as string[] | undefined;
 
   if (requiresAuth && !isAuthenticated()) {
     // Redirect to login if trying to access protected route
     next('/login');
   } else if (to.path === '/login' && isAuthenticated()) {
-    // Redirect to dashboard if already logged in and trying to access login
+    // Redirect to dashboard if already logged in
     next('/tables');
+  } else if (requiresAuth && allowedRoles && userRole.value) {
+    // Check if user has required role
+    if (allowedRoles.includes(userRole.value.toUpperCase())) {
+      next();
+    } else {
+      // User doesn't have permission
+      console.warn(`Access denied. User role ${userRole.value} cannot access ${to.path}`);
+      // Redirect to a safe page like tables (or a 403 page if you make one)
+      next('/tables'); 
+    }
   } else {
     next();
   }
