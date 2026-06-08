@@ -105,6 +105,12 @@ const routes: Array<RouteRecordRaw> = [
         path: "/show",
         name: "Show",
         component: () => import('../components/POS/components/Show.vue'),
+      },
+      {
+        path: 'shift',
+        name: 'Shift',
+        component: () => import('../views/ShiftView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER', 'CASHIER'] }
       }
       
     ],

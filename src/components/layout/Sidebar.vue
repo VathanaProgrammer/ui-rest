@@ -9,6 +9,7 @@ import {
     MonitorSmartphone,
     Settings,
     Users,
+    Clock,
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { useLogin } from '../../composables/useLogin';
@@ -25,6 +26,7 @@ const navItems = [
   { name: 'Tables', path: '/tables', icon: Armchair },
   { name: 'Staff', path: '/staff', icon: Users },
   { name: 'Category', path: '/category', icon: ChefHat },
+  { name: 'Shift', path: '/shift', icon: Clock },
 ];
 
 const handleLogout = () => {
