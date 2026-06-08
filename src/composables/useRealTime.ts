@@ -15,7 +15,7 @@ export function useRealTime(streamPath: string, eventHandlers: Record<string, Ss
 
   const connect = () => {
     // 1. Establish connection
-    eventSource = new EventSource(`${baseUrl}${streamPath}`)
+    eventSource = new EventSource(`${baseUrl}${streamPath}`, { withCredentials: true })
 
     // 2. Register all provided event listeners dynamically
     for (const [eventName, handler] of Object.entries(eventHandlers)) {
