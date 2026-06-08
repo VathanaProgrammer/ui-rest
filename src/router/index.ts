@@ -93,6 +93,12 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/SettingsView.vue'),
         meta: { roles: ['ADMIN', 'MANAGER'] }
       },
+      {
+        path: 'roles',
+        name: 'Roles',
+        component: () => import('../views/RoleManagementView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
+      },
       // SupportView
       {
         path: 'support',

@@ -13,6 +13,7 @@ import {
     ChevronLeft,
     ChevronRight,
     LayoutDashboard,
+    Shield
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ref } from 'vue';
@@ -25,16 +26,21 @@ const router = useRouter();
 const { logout } = useLogin();
 
 const navItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'POS', path: '/pos', icon: MonitorSmartphone },
-  { name: 'KDS', path: '/kds', icon: ChefHat },
-  { name: 'Menu Management', path: '/menu-management', icon: ListChecks },
-  { name: 'Tracking', path: '/tracking', icon: MapPin },
-  { name: 'Tables', path: '/tables', icon: Armchair },
-  { name: 'Staff', path: '/staff', icon: Users },
-  { name: 'Category', path: '/category', icon: ChefHat },
-  { name: 'Shift', path: '/shift', icon: Clock },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER'] },
+  { name: 'POS', path: '/pos', icon: MonitorSmartphone, roles: ['ADMIN', 'MANAGER', 'WAITSTAFF', 'CASHIER'] },
+  { name: 'KDS', path: '/kds', icon: ChefHat, roles: ['ADMIN', 'MANAGER', 'HEAD_CHEF', 'KITCHEN', 'LINE_COOK'] },
+  { name: 'Menu Management', path: '/menu-management', icon: ListChecks, roles: ['ADMIN', 'MANAGER', 'HEAD_CHEF'] },
+  { name: 'Tables', path: '/tables', icon: Armchair, roles: ['ADMIN', 'MANAGER', 'WAITSTAFF', 'SERVER', 'CASHIER'] },
+  { name: 'Staff', path: '/staff', icon: Users, roles: ['ADMIN', 'MANAGER'] },
+  { name: 'Roles', path: '/roles', icon: Shield, roles: ['ADMIN', 'MANAGER'] },
+  { name: 'Shift', path: '/shift', icon: Clock, roles: ['ADMIN', 'MANAGER', 'CASHIER', 'SERVER'] },
 ];
+
+const currentUserRole = localStorage.getItem('userRole') || 'WAITSTAFF';
+
+const filteredNavItems = navItems.filter(item => {
+  return item.roles.includes(currentUserRole.toUpperCase());
+});
 
 const handleLogout = () => {
   logout();
@@ -63,9 +69,9 @@ const handleLogout = () => {
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-4 space-y-2 overflow-y-auto overflow-x-hidden" :class="{'px-2': isCollapsed}">
+    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
       <router-link
-        v-for="item in navItems"
+        v-for="item in filteredNavItems"
         :key="item.path"
         :to="item.path"
         class="flex items-center gap-3 py-3 rounded-lg font-medium transition-colors"
