@@ -41,6 +41,7 @@ const fetchTables = async () => {
           // Find active orders for this table
           const tableOrders = allOrders.filter(o => o.tableNo === t.tableNo && ['PENDING', 'PREPARING', 'READY'].includes(o.status));
           let currentOrder = undefined;
+          let tableStatus = t.currentState.toLowerCase();
           if (tableOrders.length > 0) {
             currentOrder = tableOrders[0].items.map((i: any) => ({
               id: i.id.toString(),
@@ -48,12 +49,13 @@ const fetchTables = async () => {
               price: i.menuItem?.price || 0,
               notes: ''
             }));
+            tableStatus = 'occupied'; // Force red color if there's an active order
           }
 
           return {
             id: 't-' + t.tableNo,
             number: t.tableNo,
-            status: t.currentState.toLowerCase(),
+            status: tableStatus,
             capacity: t.capacity,
             currentOrder: currentOrder
           };
