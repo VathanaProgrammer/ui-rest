@@ -16,10 +16,11 @@ import {
     Shield
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import { useLogin } from '../../composables/useLogin';
 
 const isCollapsed = ref(true);
+const isMobileMenuOpen = inject<import('vue').Ref<boolean>>('isMobileMenuOpen');
 
 const route = useRoute();
 const router = useRouter();
@@ -49,12 +50,19 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <aside :class="['bg-[#0f172a] border-r border-[#1e293b] flex flex-col h-full text-slate-300 transition-all duration-300 relative', isCollapsed ? 'w-20' : 'w-64']">
+  <aside 
+    :class="[
+      'bg-[#0f172a] border-r border-[#1e293b] flex flex-col h-full text-slate-300 transition-all duration-300 z-[60]',
+      'absolute inset-y-0 left-0 md:relative md:translate-x-0',
+      isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
+      isCollapsed ? 'w-20' : 'w-64'
+    ]"
+  >
     
     <!-- Collapse Toggle -->
     <button 
       @click="isCollapsed = !isCollapsed" 
-      class="absolute -right-3 top-6 bg-blue-600 rounded-full p-1 text-white hover:bg-blue-500 transition shadow-lg z-50">
+      class="absolute -right-3 top-6 bg-blue-600 rounded-full p-1 text-white hover:bg-blue-500 transition shadow-lg z-50 hidden md:block">
       <ChevronRight v-if="isCollapsed" class="w-4 h-4" />
       <ChevronLeft v-else class="w-4 h-4" />
     </button>

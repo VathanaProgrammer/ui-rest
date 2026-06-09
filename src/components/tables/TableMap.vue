@@ -24,9 +24,9 @@ const getBgColor = (status: string) => {
 </script>
 
 <template>
-  <div class="relative w-full h-[600px] border border-[#1e293b] rounded-xl overflow-y-auto bg-[#0a0f1c] p-8 flex flex-col items-center">
+  <div class="relative w-full h-[600px] border border-[#1e293b] rounded-xl overflow-y-auto bg-[#0a0f1c] p-4 md:p-8 flex flex-col items-center">
     <!-- Top Filter Tabs -->
-    <div v-if="floors && floors.length > 0" class="self-start bg-[#1e293b] rounded-lg p-1 flex shadow-lg mb-12">
+    <div v-if="floors && floors.length > 0" class="self-start bg-[#1e293b] rounded-lg p-1 flex flex-wrap gap-1 shadow-lg mb-8 md:mb-12">
       <button 
         v-for="floor in floors" 
         :key="floor"
@@ -40,12 +40,12 @@ const getBgColor = (status: string) => {
     </div>
 
     <!-- The Tables Grid -->
-    <div class="grid grid-cols-4 gap-x-12 gap-y-16 max-w-4xl w-full mx-auto">
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-8 md:gap-x-12 gap-y-10 sm:gap-y-16 max-w-4xl w-full mx-auto">
       
       <!-- Loading Skeleton -->
       <template v-if="loading">
         <div v-for="i in 8" :key="'skeleton-'+i" class="flex flex-col items-center">
-          <Skeleton class="w-32 h-32 rounded-xl shadow-xl border-b-[5px] border-slate-800" />
+          <Skeleton class="w-24 h-24 sm:w-32 sm:h-32 rounded-xl shadow-xl border-b-[5px] border-slate-800" />
           <Skeleton class="h-4 w-20 mt-4" />
         </div>
       </template>
@@ -59,7 +59,7 @@ const getBgColor = (status: string) => {
         >
           <button
             @click="$emit('select', table)"
-            class="relative w-32 h-32 rounded-xl flex items-center justify-center transition-transform hover:scale-105 shadow-xl border-b-[5px] border-black/30 text-black font-bold tracking-wider"
+            class="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl flex items-center justify-center transition-transform hover:scale-105 shadow-xl border-b-[5px] border-black/30 text-black font-bold tracking-wider"
             :class="[
               getBgColor(table.status),
               selectedTableId === table.id ? 'ring-4 ring-white ring-offset-4 ring-offset-[#0a0f1c]' : ''
@@ -71,7 +71,7 @@ const getBgColor = (status: string) => {
             </div>
 
             <!-- Table Number -->
-            <span class="text-4xl opacity-90">{{ table.number }}</span>
+            <span class="text-3xl sm:text-4xl opacity-90">{{ table.number }}</span>
           </button>
           
           <!-- Table Label -->

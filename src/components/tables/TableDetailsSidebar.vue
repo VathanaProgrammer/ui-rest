@@ -9,17 +9,23 @@ defineProps<{
 
 defineEmits(['close']);
 
-const isCollapsed = ref(true);
+const isCollapsed = ref(false);
 </script>
 
 <template>
-  <div :class="['bg-[#0f172a] border-l border-[#1e293b] flex flex-col h-full relative transition-all duration-300', isCollapsed ? 'w-12' : 'w-80']">
+  <div 
+    :class="[
+      'bg-[#0f172a] border-l border-[#1e293b] flex flex-col h-full relative transition-all duration-300',
+      'absolute inset-y-0 right-0 z-40 lg:relative',
+      isCollapsed ? 'translate-x-full lg:translate-x-0 lg:w-12 w-0' : 'translate-x-0 w-full sm:w-80'
+    ]"
+  >
     
     <!-- Collapse Toggle -->
     <button 
       v-if="table"
       @click="isCollapsed = !isCollapsed" 
-      class="absolute -left-3 top-6 bg-blue-600 rounded-full p-1 text-white hover:bg-blue-500 transition shadow-lg z-50">
+      class="absolute -left-3 top-6 bg-blue-600 rounded-full p-1 text-white hover:bg-blue-500 transition shadow-lg z-50 hidden lg:block">
       <ChevronLeft v-if="isCollapsed" class="w-4 h-4" />
       <ChevronRight v-else class="w-4 h-4" />
     </button>
