@@ -15,7 +15,16 @@ const loading = ref(true);
 const fetchTables = async () => {
   loading.value = true;
   try {
-    const response = await api.get<any>('/dining-tables/grouped');
+    const [response, ordersRes] = await Promise.all([
+      api.get<any>('/dining-tables/grouped'),
+      api.get<any>('/orders')
+    ]);
+
+    let allOrders: any[] = [];
+    if (ordersRes && ordersRes.data) {
+      allOrders = ordersRes.data;
+    }
+
     if (response.status === 1 && response.data) {
       const groupedData = response.data;
       floors.value = groupedData.map((g: any) => g.floor);
@@ -27,12 +36,28 @@ const fetchTables = async () => {
       // Find tables for active floor
       const activeGroup = groupedData.find((g: any) => g.floor === activeFloor.value);
       if (activeGroup) {
-        tables.value = activeGroup.tables.map((t: any) => ({
-          id: 't-' + t.tableNo,
-          number: t.tableNo,
-          status: t.currentState.toLowerCase(),
-          capacity: t.capacity
-        }));
+        tables.value = activeGroup.tables.map((t: any) => {
+          
+          // Find active orders for this table
+          const tableOrders = allOrders.filter(o => o.tableNo === t.tableNo && ['PENDING', 'PREPARING', 'READY'].includes(o.status));
+          let currentOrder = undefined;
+          if (tableOrders.length > 0) {
+            currentOrder = tableOrders[0].items.map((i: any) => ({
+              id: i.id.toString(),
+              name: i.menuItem?.name || 'Item',
+              price: i.menuItem?.price || 0,
+              notes: ''
+            }));
+          }
+
+          return {
+            id: 't-' + t.tableNo,
+            number: t.tableNo,
+            status: t.currentState.toLowerCase(),
+            capacity: t.capacity,
+            currentOrder: currentOrder
+          };
+        });
       }
 
       if (tables.value.length > 0 && !selectedTable.value) {
