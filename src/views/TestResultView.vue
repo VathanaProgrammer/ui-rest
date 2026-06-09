@@ -19,15 +19,6 @@ connectStream({
       table: 'System',
       orderName: newItemData
     })
-  },
-  'NEW_ORDER': (event) => {
-    const orderData = JSON.parse(event.data);
-    console.log('Real-time new order received:', orderData)
-    showAlert({
-      title: 'New Order Created!',
-      table: orderData.tableNo,
-      orderName: `Type: ${orderData.orderType} | Total Items: ${orderData.items.length}`
-    })
   }
 })
 </script>

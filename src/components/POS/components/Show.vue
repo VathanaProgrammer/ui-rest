@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useApiStream } from '../../../composables/useApiStream';
-import { useOrderAlert } from '../../../composables/useOrderAlert';
 import { api, type ApiResponse } from '../../../utils/api';
 import Skeleton from '../../ui/Skeleton.vue';
 
@@ -29,23 +28,7 @@ const loading = ref(true);
 const loadingCategories = ref(true);
 const errorMsg = ref<string | null>(null);
 
-const { showAlert } = useOrderAlert();
 
-// Use the reusable composable for SSE
-const { connectStream } = useApiStream('', 'orders');
-connectStream({
-  'NEW_ORDER': (event) => {
-    const orderData = JSON.parse(event.data);
-    console.log('Real-time new order received:', orderData);
-    showAlert({
-      title: 'New Order Placed!',
-      table: orderData.tableNo,
-      orderType: orderData.orderType,
-      orderName: orderData.customerName || 'A customer',
-      playSound: true
-    });
-  }
-});
 
 const fetchMenuItems = async () => {
   loading.value = true;

@@ -28,8 +28,8 @@ export function useOrderAlert() {
     
     // Play sound if requested
     if (data.playSound) {
-      // Use the provided sound URL or a default pleasant notification chime
-      const url = data.soundUrl || 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'
+      // Use the provided sound URL or a louder restaurant bell
+      const url = data.soundUrl || 'https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg'
       const audio = new Audio(url)
       audio.play().catch(e => console.warn('Audio playback was blocked by the browser. User must interact with the page first.', e))
     }

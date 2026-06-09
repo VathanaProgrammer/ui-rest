@@ -107,11 +107,6 @@ export function useKDS() {
         // Add new order to KDS if it's not already there
         if (!activeOrders.value.find(o => o.id === orderData.id)) {
             activeOrders.value.unshift(mapBackendOrder(orderData));
-            showAlert({
-                title: 'New Kitchen Ticket',
-                table: orderData.tableNo,
-                orderName: `Order #${orderData.id} just arrived.`
-            });
         }
     },
     'ORDER_STATUS_UPDATED': (event) => {
