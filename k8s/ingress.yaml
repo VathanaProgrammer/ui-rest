@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: restaurant-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: restaurant.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: bff-rest-service
+                port:
+                  number: 7444
+          - path: /staff
+            pathType: Prefix
+            backend:
+              service:
+                name: ui-rest-service
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: order-rest-service
+                port:
+                  number: 80

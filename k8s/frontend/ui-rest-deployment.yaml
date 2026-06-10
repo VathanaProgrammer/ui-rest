@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-rest-deployment
+  labels:
+    app: ui-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui-rest
+  template:
+    metadata:
+      labels:
+        app: ui-rest
+    spec:
+      containers:
+        - name: ui-rest
+          image: client-app:v.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bff-rest-deployment
+  labels:
+    app: bff-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bff-rest
+  template:
+    metadata:
+      labels:
+        app: bff-rest
+    spec:
+      containers:
+        - name: bff-rest
+          image: bff-rest:v.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://db:3306/rest?allowPublicKeyRetrieval=true&useSSL=false"
+          ports:
+            - containerPort: 7444
+          volumeMounts:
+            - name: rest-uploads
+              mountPath: /rest-v.1/uploads
+      volumes:
+        - name: rest-uploads
+          persistentVolumeClaim:
+            claimName: bff-rest-uploads-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bff-rest-uploads-pvc
+  labels:
+    app: bff-rest
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi

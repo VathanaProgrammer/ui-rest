@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-rest-deployment
+  labels:
+    app: order-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-rest
+  template:
+    metadata:
+      labels:
+        app: order-rest
+    spec:
+      containers:
+        - name: order-rest
+          image: user-app:v.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
