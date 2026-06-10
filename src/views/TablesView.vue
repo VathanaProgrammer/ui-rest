@@ -86,6 +86,18 @@ const handleFloorChange = (floor: string) => {
   selectedTable.value = null; // reset selected table when switching floors
   fetchTables();
 };
+
+const handleReleaseTable = async (table: Table) => {
+  try {
+    const res = await api.post(`/dining-tables/${table.number}/release`);
+    if (res.status === 1 || res.data) {
+      selectedTable.value = null;
+      fetchTables();
+    }
+  } catch (error) {
+    console.error('Failed to release table:', error);
+  }
+};
 </script>
 
 <template>
@@ -109,6 +121,7 @@ const handleFloorChange = (floor: string) => {
       v-if="selectedTable"
       :table="selectedTable" 
       @close="selectedTable = null" 
+      @release="handleReleaseTable"
     />
   </div>
 </template>

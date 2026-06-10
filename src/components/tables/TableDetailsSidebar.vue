@@ -7,7 +7,7 @@ defineProps<{
   table: Table | null;
 }>();
 
-defineEmits(['close']);
+defineEmits(['close', 'release']);
 
 const isCollapsed = ref(false);
 </script>
@@ -102,7 +102,7 @@ const isCollapsed = ref(false);
           <Printer class="w-5 h-5" />
           Print Bill
         </button>
-        <button class="w-full bg-transparent border border-red-900/50 hover:bg-red-900/20 text-red-500 font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+        <button @click="$emit('release', table)" class="w-full bg-transparent border border-red-900/50 hover:bg-red-900/20 text-red-500 font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
           <Ban class="w-5 h-5" />
           Void Table
         </button>
