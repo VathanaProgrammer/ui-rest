@@ -30,7 +30,7 @@ jobs:
           host: 13.212.150.130
           username: ubuntu
           key: ${{ secrets.UI_EC2_SSH_KEY }}
-          source: "."
+          source: "dist,nginx.conf,Dockerfile"
           target: "~/deploy-ui"
           
       - name: Build and Deploy to K3s
