@@ -20,6 +20,8 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 // that is why I create this now look at what the code this file help
 // it not 100% right but it also c
 
+import { showLoader, hideLoader } from '../composables/useGlobalLoader';
+
 /**
  * Global configured Axios instance.
  * Using withCredentials: true as your backend uses HttpOnly cookies for JWTs.
@@ -37,10 +39,14 @@ export const apiClient: AxiosInstance = axios.create({
 // Request Interceptor: Useful for adding custom headers or logging before request is sent
 apiClient.interceptors.request.use(
   (config) => {
-    // Example: config.headers['X-Custom-Header'] = 'value';
+    // Only show loader for explicit API calls, not background refresh token calls
+    if (!config.url?.includes('/auth/refresh') && !config.url?.includes('/auth/logout')) {
+      showLoader();
+    }
     return config;
   },
   (error) => {
+    hideLoader();
     return Promise.reject(error);
   }
 );
@@ -62,10 +68,16 @@ const processQueue = (error: any, token: string | null = null) => {
 // Response Interceptor: Useful for global error handling and auto-refresh token handling
 apiClient.interceptors.response.use(
   (response) => {
+    if (!response.config.url?.includes('/auth/refresh') && !response.config.url?.includes('/auth/logout')) {
+      hideLoader();
+    }
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
+    if (originalRequest && !originalRequest.url?.includes('/auth/refresh') && !originalRequest.url?.includes('/auth/logout')) {
+      hideLoader();
+    }
     
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       
