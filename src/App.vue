@@ -4,13 +4,13 @@ import GlobalLoader from './components/layout/GlobalLoader.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  // Global click sound effect
-  const clickSound = new Audio('/click.mp3');
-  clickSound.volume = 0.4;
+  // Global click sound effect base
+  const baseClickSound = new Audio('/click.mp3');
 
   document.body.addEventListener('click', () => {
-    clickSound.currentTime = 0;
-    clickSound.play().catch(e => console.warn('Audio playback prevented by browser:', e));
+    const soundClone = baseClickSound.cloneNode() as HTMLAudioElement;
+    soundClone.volume = 0.4;
+    soundClone.play().catch(e => console.warn('Audio playback prevented by browser:', e));
   });
 })
 </script>
