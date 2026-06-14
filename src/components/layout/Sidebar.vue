@@ -16,11 +16,36 @@ import {
     Shield
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useLogin } from '../../composables/useLogin';
+import ProfileModal from './ProfileModal.vue';
+import { api } from '../../utils/api';
 
 const isCollapsed = ref(true);
 const isMobileMenuOpen = inject<import('vue').Ref<boolean>>('isMobileMenuOpen');
+const showProfileModal = ref(false);
+const currentUser = ref<any>(null);
+
+onMounted(async () => {
+  try {
+    const res = await api.get('/profile/me');
+    if (res.status === 1) {
+      currentUser.value = res.data;
+    }
+  } catch (err) {
+    console.error('Failed to fetch user profile:', err);
+  }
+});
+
+const handleProfileUpdate = (updatedUser: any) => {
+  currentUser.value = updatedUser;
+};
+
+const getAvatarUrl = (url: string) => {
+  if (!url) return 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=64';
+  if (url.startsWith('http')) return url;
+  return import.meta.env.VITE_API_BASE_URL.replace('/api', '') + url;
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -68,11 +93,19 @@ const handleLogout = () => {
     </button>
 
     <!-- User Profile -->
-    <div class="p-6 border-b border-[#1e293b] mb-4 flex items-center gap-3" :class="{'justify-center p-4': isCollapsed}">
-      <img src="https://ui-avatars.com/api/?name=Line+Cook&background=0D8ABC&color=fff&size=64" alt="Staff Profile" class="w-10 h-10 rounded-full border border-slate-700 object-cover min-w-[40px]" />
-      <div v-if="!isCollapsed" class="whitespace-nowrap overflow-hidden text-ellipsis">
-        <h2 class="text-white font-semibold text-base leading-tight">Line Cook Pro</h2>
-        <p class="text-slate-500 text-xs">Station 01</p>
+    <div 
+      class="p-6 border-b border-[#1e293b] mb-4 flex items-center gap-3 cursor-pointer hover:bg-slate-800 transition-colors group relative" 
+      :class="{'justify-center p-4': isCollapsed}"
+      @click="currentUser && (showProfileModal = true)"
+    >
+      <img :src="currentUser ? getAvatarUrl(currentUser.avatarUrl) : 'https://ui-avatars.com/api/?name=Load&background=0D8ABC&color=fff&size=64'" alt="Staff Profile" class="w-10 h-10 rounded-full border border-slate-700 object-cover min-w-[40px] group-hover:border-blue-500 transition-colors" />
+      <div v-if="!isCollapsed" class="whitespace-nowrap overflow-hidden text-ellipsis flex-1">
+        <h2 class="text-white font-semibold text-base leading-tight group-hover:text-blue-400 transition-colors">{{ currentUser?.displayName || currentUser?.fullName || 'Loading...' }}</h2>
+        <p class="text-slate-500 text-xs">{{ currentUser?.role?.roleName || 'Staff' }}</p>
+      </div>
+      <!-- Tooltip for collapsed state -->
+      <div v-if="isCollapsed" class="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+        Edit Profile
       </div>
     </div>
 
@@ -119,5 +152,13 @@ const handleLogout = () => {
         </button>
       </div>
     </div>
+
+    <!-- Profile Edit Modal -->
+    <ProfileModal 
+      v-if="showProfileModal && currentUser" 
+      :user="currentUser" 
+      @close="showProfileModal = false"
+      @updated="handleProfileUpdate"
+    />
   </aside>
 </template>
