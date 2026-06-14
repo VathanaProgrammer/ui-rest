@@ -45,25 +45,84 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Useful for global error handling (e.g., 401 Unauthorized)
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response Interceptor: Useful for global error handling and auto-refresh token handling
 apiClient.interceptors.response.use(
   (response) => {
-    // Any status code that lies within the range of 2xx causes this function to trigger
     return response;
   },
-  (error) => {
-    // Any status code that falls outside the range of 2xx causes this function to trigger
-    if (error.response) {
-      if (error.response.status === 401 || error.response.status === 403) {
-        console.warn('Unauthorized or Forbidden request. Token might be expired or missing.');
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      
+      // If the failed request was the refresh token request itself, log out!
+      if (originalRequest.url && originalRequest.url.includes('/auth/refresh')) {
+        console.warn('Refresh token is invalid or expired. Logging out.');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('employeeId');
         localStorage.removeItem('userRole');
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
+        return Promise.reject(error);
+      }
+
+      if (!originalRequest._retry) {
+        if (isRefreshing) {
+          // If we are already refreshing, put this request in a queue to wait
+          return new Promise(function(resolve, reject) {
+            failedQueue.push({ resolve, reject });
+          }).then(token => {
+            return apiClient(originalRequest);
+          }).catch(err => {
+            return Promise.reject(err);
+          });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          // Hit the brand new backend /refresh endpoint seamlessly
+          const refreshUrl = baseUrl + '/auth/refresh';
+          await axios.post(refreshUrl, {}, { withCredentials: true });
+          
+          isRefreshing = false;
+          processQueue(null, 'true');
+          
+          // Re-run the original request! It will now succeed!
+          return apiClient(originalRequest);
+
+        } catch (refreshError) {
+          isRefreshing = false;
+          processQueue(refreshError, null);
+          
+          console.warn('Background refresh token failed. Session completely dead. Logging out.');
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('employeeId');
+          localStorage.removeItem('userRole');
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshError);
+        }
       }
     }
+    
     return Promise.reject(error);
   }
 );
