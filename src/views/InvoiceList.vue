@@ -52,77 +52,93 @@ function handleSave(updated: any) {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="invoice-wrapper">
     <!-- Header -->
-    <header class="flex justify-between items-center mb-8">
+    <div class="page-header">
       <div>
-        <h1 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Invoice Management</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">View, edit, and track customer payments.</p>
+        <h1 class="page-title">Invoice Management</h1>
+        <p class="page-subtitle">View, edit, and track customer payments.</p>
       </div>
-      <button @click="fetchInvoices" class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-        <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      <button @click="fetchInvoices" class="btn-refresh">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
+        Refresh
       </button>
-    </header>
+    </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex-1 overflow-hidden flex flex-col">
-      <div v-if="loading" class="flex-1 flex items-center justify-center">
-        <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <!-- Main Content -->
+    <div class="table-card flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Loading State -->
+      <div v-if="loading" class="empty-state flex-1">
+        <svg class="spin spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
       </div>
 
-      <div v-else-if="invoices.length === 0" class="flex-1 flex flex-col items-center justify-center p-8 text-gray-400">
-        <svg class="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-        <p>No invoices found in the system.</p>
+      <!-- Empty State -->
+      <div v-else-if="invoices.length === 0" class="empty-state flex-1">
+        <div class="empty-icon-wrap">
+          <svg class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="empty-title">No Invoices Found</h3>
+        <p class="empty-desc">There are currently no invoices recorded in the system.</p>
       </div>
 
-      <div v-else class="overflow-auto flex-1 customs-scroll">
-        <table class="w-full text-left border-collapse min-w-[800px]">
-          <thead class="sticky top-0 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-10">
+      <!-- Table Data -->
+      <div v-else class="table-container customs-scroll flex-1">
+        <table class="data-table">
+          <thead>
             <tr>
-              <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">ID</th>
-              <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Date</th>
-              <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Customer</th>
-              <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Amount</th>
-              <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Status</th>
-              <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Actions</th>
+              <th>ID</th>
+              <th>DATE & TIME</th>
+              <th>CUSTOMER</th>
+              <th>AMOUNT</th>
+              <th>STATUS</th>
+              <th class="text-right">ACTIONS</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-            <tr v-for="invoice in invoices" :key="invoice.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-              <td class="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">#{{ invoice.id }}</td>
-              <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">
-                {{ new Date(invoice.invoiceDate).toLocaleString() }}
+          <tbody>
+            <tr v-for="invoice in invoices" :key="invoice.id">
+              <td class="font-bold text-[#e2e8f0]">#{{ invoice.id }}</td>
+              <td>
+                <div class="text-[#cbd5e1] font-semibold">{{ new Date(invoice.invoiceDate).toLocaleDateString() }}</div>
+                <div class="text-[12px] text-[#475569] font-mono mt-0.5">{{ new Date(invoice.invoiceDate).toLocaleTimeString() }}</div>
               </td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-2 text-sm text-gray-900 dark:text-white font-medium">
-                  {{ invoice.customer?.name || 'Guest' }}
-                </div>
-                <div class="text-xs text-gray-500">{{ invoice.customer?.phone || 'N/A' }}</div>
+              <td>
+                <div class="customer-name">{{ invoice.customer?.name || 'Guest Checkout' }}</div>
+                <div class="customer-phone">{{ invoice.customer?.phone || 'No phone provided' }}</div>
               </td>
-              <td class="py-4 px-6 text-sm font-black text-gray-900 dark:text-white">${{ invoice.totalAmount?.toFixed(2) }}</td>
-              <td class="py-4 px-6">
-                <span 
-                  class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border"
-                  :class="{
-                    'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-green-200 dark:border-green-500/20': invoice.status === 'PAID',
-                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/20': invoice.status === 'PENDING',
-                    'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-500/20': invoice.status === 'CANCELLED'
-                  }"
-                >
+              <td class="amount-cell">${{ invoice.totalAmount?.toFixed(2) }}</td>
+              <td>
+                <span class="status-pill" :class="invoice.status.toLowerCase()">
+                  <span class="status-dot" :class="invoice.status.toLowerCase()"></span>
                   {{ invoice.status }}
                 </span>
               </td>
-              <td class="py-4 px-6 flex justify-end gap-2">
-                <button @click="openEditModal(invoice)" class="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                </button>
-                <button @click="handleDelete(invoice.id)" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
+              <td>
+                <div class="action-btns justify-end">
+                  <button class="btn-action btn-edit" @click="openEditModal(invoice)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                   </svg>
+                    Edit
+                  </button>
+                  <button class="btn-action btn-delete" @click="handleDelete(invoice.id)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -140,16 +156,196 @@ function handleSave(updated: any) {
   </div>
 </template>
 
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+</style>
+
 <style scoped>
-.customs-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.invoice-wrapper {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background: #0b1120;
+  padding: 28px 28px 48px;
+  box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
 }
-.customs-scroll::-webkit-scrollbar-track {
-  background: transparent;
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
-.customs-scroll::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 99px;
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
 }
+
+.page-subtitle {
+  font-size: 14px;
+  color: #475569;
+  margin: 0;
+}
+
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+.btn-refresh:hover { background: #27354f; border-color: #475569; color: #fff; }
+
+/* ── Layout ─────────────────────────────────────────── */
+.table-card {
+  background: #131c2e;
+  border: 1px solid #1e2d45;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.table-container {
+  overflow-y: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: #0f1624;
+  padding: 16px 24px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid #1e2d45;
+  z-index: 10;
+}
+
+tbody tr {
+  border-bottom: 1px solid #1a2540;
+  transition: background 0.15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #162035; }
+tbody td {
+  padding: 18px 24px;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.customer-name { font-weight: 600; color: #e2e8f0; }
+.customer-phone { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+.amount-cell {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f8fafc;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Status pill ─────────────────────────────────────── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+}
+
+.status-pill.paid { background: #052e16; border-color: #166534; color: #4ade80; }
+.status-pill.pending { background: #422006; border-color: #92400e; color: #fbbf24; }
+.status-pill.cancelled { background: #3b1219; border-color: #881337; color: #f87171; }
+
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.paid { background: #4ade80; box-shadow: 0 0 6px #4ade80aa; }
+.status-dot.pending { background: #fbbf24; }
+.status-dot.cancelled { background: #f87171; }
+
+/* ── Action buttons ──────────────────────────────────── */
+.action-btns { display: flex; align-items: center; gap: 8px; }
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-edit { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.btn-edit:hover { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd; }
+
+.btn-delete { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+.btn-delete:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+
+/* ── Empty State ─────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+.empty-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border: 1px dashed rgba(71, 85, 105, 0.4);
+}
+.empty-icon { width: 36px; height: 36px; color: #475569; }
+.empty-title { font-size: 18px; font-weight: 700; color: #e2e8f0; margin: 0 0 8px; }
+.empty-desc { font-size: 14px; color: #64748b; max-width: 300px; text-align: center; line-height: 1.5; }
+
+.spin { animation: spin 0.8s linear infinite; }
+.spinner-icon { width: 32px; height: 32px; color: #3b82f6; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Scrollbar ───────────────────────────────────────── */
+.customs-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.customs-scroll::-webkit-scrollbar-track { background: transparent; }
+.customs-scroll::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.4); border-radius: 99px; }
+.customs-scroll::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 0.6); }
 </style>
