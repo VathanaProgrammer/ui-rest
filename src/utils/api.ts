@@ -55,9 +55,13 @@ apiClient.interceptors.response.use(
     // Any status code that falls outside the range of 2xx causes this function to trigger
     if (error.response) {
       if (error.response.status === 401) {
-        // Handle unauthorized globally here if needed
-        // e.g., clear localStorage, trigger a redirect to login
         console.warn('Unauthorized request. Token might be expired or missing.');
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('employeeId');
+        localStorage.removeItem('userRole');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       } else if (error.response.status === 403) {
         console.warn('Forbidden access.');
       }
