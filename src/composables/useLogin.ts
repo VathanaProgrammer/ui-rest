@@ -63,13 +63,20 @@ export function useLogin() {
     }
   }
 
-  const logout = () => {
-    token.value = null
-    userRole.value = null
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('employeeId')
-    localStorage.removeItem('userRole')
-    error.value = null
+  const logout = async () => {
+    try {
+      // Call backend to clear HttpOnly cookies
+      await axios.post(`${baseUrl}/auth/logout`, {}, { withCredentials: true })
+    } catch (err) {
+      console.warn('Backend logout failed, but clearing local state anyway', err)
+    } finally {
+      token.value = null
+      userRole.value = null
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('employeeId')
+      localStorage.removeItem('userRole')
+      error.value = null
+    }
   }
 
   const clearError = () => {
