@@ -288,19 +288,24 @@ const emit = defineEmits<{
   }): void;
 }>();
 
-// ── Static data ──────────────────────────────────────────────────────────────
-// TODO: fetch roles from GET /api/roles → map to { id: number, label: string }
-// API shape: { id: number, roleName: string }
-const roles = [
-  { id: 1, label: 'Manager'    },
-  { id: 2, label: 'Head Chef'  },
-  { id: 3, label: 'Sous Chef'  },
-  { id: 4, label: 'Line Cook'  },
-  { id: 5, label: 'Prep Cook'  },
-  { id: 6, label: 'Server'     },
-  { id: 7, label: 'Bartender'  },
-  { id: 8, label: 'Host'       },
-];
+const roles = ref<{ id: number; label: string }[]>([]);
+
+import { onMounted } from 'vue';
+import { api } from '../../utils/api';
+
+onMounted(async () => {
+  try {
+    const res = await api.get('/roles');
+    if (res.status === 1) {
+      roles.value = res.data.map((r: any) => ({
+        id: r.id,
+        label: r.roleName
+      }));
+    }
+  } catch (e) {
+    console.error('Failed to fetch roles:', e);
+  }
+});
 
 const shifts = [
   { label: 'Morning',   display: 'Morning   (06:00 – 14:00)' },
@@ -352,9 +357,10 @@ watch(
     if (!m) return;
     form.name        = m.name;
     form.displayName = (m as any).displayName ?? '';
-    // TODO: when roles come from API, match m.role string to role.id
-    // For now: find by label, fall back to 0
-    form.role        = roles.find(r => r.label === m.role)?.id ?? 0;
+    // Wait for roles to load if needed
+    setTimeout(() => {
+      form.role = roles.value.find(r => r.label === m.role)?.id ?? 0;
+    }, 100);
     form.shift       = m.shift;
     form.email       = m.email;
     form.phoneNumber = (m as any).phoneNumber ?? '';
@@ -422,7 +428,7 @@ async function handleSubmit() {
 
   await new Promise(r => setTimeout(r, 700));
 
-  const updatedRole = roles.find(r => r.id === form.role)?.label ?? props.member.role;
+  const updatedRole = roles.value.find(r => r.id === form.role)?.label ?? props.member.role;
 
   emit('staff-updated', {
     ...props.member,

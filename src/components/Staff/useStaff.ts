@@ -23,6 +23,12 @@ const ROLE_MAP: Record<number, string> = {
   8: 'Host',
 };
 
+const getAvatarUrl = (url: string, name: string) => {
+  if (!url) return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&size=64`;
+  if (url.startsWith('http')) return url;
+  return import.meta.env.VITE_API_BASE_URL.replace('/api', '') + url;
+};
+
 import { api } from '../../utils/api';
 
 export function useStaff() {
@@ -38,14 +44,14 @@ export function useStaff() {
         allStaff.value = res.data.map((u: any) => ({
           id: String(u.id),
           employeeId: u.employeeId,
-          name: u.fullName,
+          name: u.displayName || u.fullName || 'Unknown',
           displayName: u.displayName,
           role: u.role ? u.role.roleName : 'Unknown',
           shift: 'Morning', // mocked as not in DB
           shiftHours: '06:00 - 14:00',
           email: u.emailAddress,
           phoneNumber: u.phoneNumber,
-          avatar: u.avatarUrl,
+          avatar: getAvatarUrl(u.avatarUrl, u.displayName || u.fullName || 'User'),
           status: u.currentStatus.toLowerCase(),
         }));
       }

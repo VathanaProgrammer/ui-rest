@@ -279,8 +279,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, onMounted } from 'vue';
 import type { StaffStatus } from './types';
+import { api } from '../../utils/api';
 
 defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{
@@ -299,19 +300,21 @@ const emit = defineEmits<{
   }): void;
 }>();
 
-// ── Static data ──────────────────────────────────────────────────────────────
-// TODO: fetch roles from GET /api/roles → map to { id: number, label: string }
-// API shape: { id: number, roleName: string }
-const roles = [
-  { id: 1, label: 'Manager'    },
-  { id: 2, label: 'Head Chef'  },
-  { id: 3, label: 'Sous Chef'  },
-  { id: 4, label: 'Line Cook'  },
-  { id: 5, label: 'Prep Cook'  },
-  { id: 6, label: 'Server'     },
-  { id: 7, label: 'Bartender'  },
-  { id: 8, label: 'Host'       },
-];
+const roles = ref<{ id: number; label: string }[]>([]);
+
+onMounted(async () => {
+  try {
+    const res = await api.get('/roles');
+    if (res.status === 1) {
+      roles.value = res.data.map((r: any) => ({
+        id: r.id,
+        label: r.roleName
+      }));
+    }
+  } catch (e) {
+    console.error('Failed to fetch roles:', e);
+  }
+});
 
 const shifts = [
   { label: 'Morning',   display: 'Morning   (06:00 – 14:00)' },
