@@ -13,7 +13,8 @@ import {
     ChevronLeft,
     ChevronRight,
     LayoutDashboard,
-    Shield
+    Shield,
+    Receipt
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, inject, onMounted, watch } from 'vue';
@@ -64,6 +65,7 @@ const navItems = [
   { name: 'Tables', path: '/tables', icon: Armchair, roles: ['ADMIN', 'MANAGER', 'WAITSTAFF', 'SERVER', 'CASHIER'] },
   { name: 'Staff', path: '/staff', icon: Users, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Roles', path: '/roles', icon: Shield, roles: ['ADMIN', 'MANAGER'] },
+  { name: 'Invoices', path: '/invoices', icon: Receipt, roles: ['ADMIN', 'MANAGER', 'WAITSTAFF', 'CASHIER'] },
   { name: 'Shift', path: '/shift', icon: Clock, roles: ['ADMIN', 'MANAGER', 'CASHIER', 'SERVER'] },
 ];
 
