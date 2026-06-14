@@ -16,12 +16,17 @@ import {
     Shield
 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, onMounted, watch } from 'vue';
 import { useLogin } from '../../composables/useLogin';
 import ProfileModal from './ProfileModal.vue';
 import { api } from '../../utils/api';
 
-const isCollapsed = ref(true);
+const savedState = localStorage.getItem('sidebarCollapsed');
+const isCollapsed = ref(savedState !== null ? savedState === 'true' : false);
+
+watch(isCollapsed, (newVal) => {
+  localStorage.setItem('sidebarCollapsed', newVal.toString());
+});
 const isMobileMenuOpen = inject<import('vue').Ref<boolean>>('isMobileMenuOpen');
 const showProfileModal = ref(false);
 const currentUser = ref<any>(null);
@@ -155,12 +160,21 @@ const handleLogout = () => {
 
     <!-- Profile Edit Modal -->
     <Teleport to="body">
-      <ProfileModal 
-        v-if="showProfileModal && currentUser" 
-        :user="currentUser" 
-        @close="showProfileModal = false"
-        @updated="handleProfileUpdate"
-      />
+      <transition 
+        enter-active-class="transition ease-out duration-300"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-200"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <ProfileModal 
+          v-if="showProfileModal && currentUser" 
+          :user="currentUser" 
+          @close="showProfileModal = false"
+          @updated="handleProfileUpdate"
+        />
+      </transition>
     </Teleport>
   </aside>
 </template>
