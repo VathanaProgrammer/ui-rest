@@ -154,11 +154,13 @@ const handleLogout = () => {
     </div>
 
     <!-- Profile Edit Modal -->
-    <ProfileModal 
-      v-if="showProfileModal && currentUser" 
-      :user="currentUser" 
-      @close="showProfileModal = false"
-      @updated="handleProfileUpdate"
-    />
+    <Teleport to="body">
+      <ProfileModal 
+        v-if="showProfileModal && currentUser" 
+        :user="currentUser" 
+        @close="showProfileModal = false"
+        @updated="handleProfileUpdate"
+      />
+    </Teleport>
   </aside>
 </template>
