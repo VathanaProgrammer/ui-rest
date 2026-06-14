@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { useOrderAlert } from '../../composables/useOrderAlert'
+import { watch } from 'vue'
 
 const { activeAlert, dismissAlert } = useOrderAlert()
+
+const newOrderSound = new Audio('/new_order.mp3')
+newOrderSound.volume = 0.8
+
+watch(activeAlert, (newVal) => {
+  if (newVal) {
+    newOrderSound.currentTime = 0
+    newOrderSound.play().catch(e => console.warn('Alert audio blocked:', e))
+  }
+})
 </script>
 
 <template>
