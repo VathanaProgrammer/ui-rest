@@ -21,6 +21,22 @@ export function useKDS() {
     });
   };
 
+  const formatTime = (totalSeconds: number): string => {
+      const absSecs = Math.abs(totalSeconds);
+      const h = Math.floor(absSecs / 3600);
+      const m = String(Math.floor((absSecs % 3600) / 60)).padStart(2, '0');
+      const s = String(absSecs % 60).padStart(2, '0');
+      
+      let timeString = '';
+      if (h > 0) {
+          timeString = `${h}:${m}:${s}`;
+      } else {
+          timeString = `${m}:${s}`;
+      }
+      
+      return totalSeconds < 0 ? `-${timeString}` : timeString;
+  };
+
   // ── Timer tick ─────────────────────────────────────────
   let timerInterval: ReturnType<typeof setInterval>;
 
@@ -35,10 +51,7 @@ export function useKDS() {
     activeOrders.value = activeOrders.value.map(order => {
       const secs = order.elapsedSeconds + 1;
       
-      const absSecs = Math.abs(secs);
-      const m = String(Math.floor(absSecs / 60)).padStart(2, '0');
-      const s = String(absSecs % 60).padStart(2, '0');
-      const timeString = secs < 0 ? `-${m}:${s}` : `${m}:${s}`;
+      const timeString = formatTime(secs);
 
       let statusInfo = resolveStatus(secs);
       if (secs < 0) {
@@ -100,10 +113,7 @@ export function useKDS() {
 
       let secs = Math.floor((now.getTime() - startTime.getTime()) / 1000);
       
-      const absSecs = Math.abs(secs);
-      const m = String(Math.floor(absSecs / 60)).padStart(2, '0');
-      const s = String(absSecs % 60).padStart(2, '0');
-      const timeString = secs < 0 ? `-${m}:${s}` : `${m}:${s}`;
+      const timeString = formatTime(secs);
 
       let statusInfo = resolveStatus(secs);
       if (secs < 0) {
