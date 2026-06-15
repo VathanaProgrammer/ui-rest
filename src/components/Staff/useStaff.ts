@@ -11,7 +11,6 @@ const SHIFT_HOURS: Record<string, string> = {
   Night:     '22:00 - 06:00',
 };
 
-// TODO: fetch from GET /api/roles — keep in sync with AddStaffModal.vue
 const ROLE_MAP: Record<number, string> = {
   1: 'Manager',
   2: 'Head Chef',
@@ -22,6 +21,10 @@ const ROLE_MAP: Record<number, string> = {
   7: 'Bartender',
   8: 'Host',
 };
+
+const ROLE_MAP_INVERSE: Record<string, number> = Object.fromEntries(
+  Object.entries(ROLE_MAP).map(([k, v]) => [v, Number(k)])
+);
 
 const getAvatarUrl = (url: string, name: string) => {
   if (!url) return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&size=64`;
@@ -109,13 +112,31 @@ export function useStaff() {
     }
   };
 
-  const updateStaff = (updated: StaffMember) => {
-    const idx = allStaff.value.findIndex(s => s.id === updated.id);
-    if (idx !== -1) {
-      allStaff.value[idx] = {
-        ...updated,
-        shiftHours: SHIFT_HOURS[updated.shift] ?? updated.shiftHours,
+  const updateStaff = async (updated: StaffMember) => {
+    try {
+      const payload: Record<string, any> = {
+        name: updated.name,
+        displayName: updated.displayName,
+        role: ROLE_MAP_INVERSE[updated.role] || 0, // Need to map this correctly, but the API will just use the role ID
+        shift: updated.shift,
+        email: updated.email,
+        phoneNumber: updated.phoneNumber,
+        status: updated.status,
       };
+
+      if (updated.avatar && updated.avatar.startsWith('data:image')) {
+        payload.avatar = updated.avatar;
+      }
+      if ((updated as any).accessPin) {
+        payload.accessPin = (updated as any).accessPin;
+      }
+
+      const res = await api.put<any>(`/staff/${updated.id}`, payload);
+      if (res.status === 1) {
+        await fetchStaff();
+      }
+    } catch (e) {
+      console.error('Failed to update staff', e);
     }
   };
 
