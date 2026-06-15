@@ -9,6 +9,7 @@ export const mockOrders: Order[] = [
     statusLabel: 'OVERDUE',
     elapsed: '12:45',
     elapsedSeconds: 765,
+    backendStatus: 'PENDING',
     items: [
       { qty: 2, name: 'Double Smash Burger', alert: 'NO ONIONS', modifier: '+ Extra Cheese' },
       { qty: 1, name: 'Truffle Fries', modifier: 'Large size' },
@@ -22,6 +23,7 @@ export const mockOrders: Order[] = [
     statusLabel: 'WARNING',
     elapsed: '07:12',
     elapsedSeconds: 432,
+    backendStatus: 'PENDING',
     items: [
       { qty: 4, name: 'Classic Wings (12pc)', modifier: '2x Buffalo, 2x Garlic Parm' },
       { qty: 2, name: 'Caesar Salad', modifier: 'No Croutons' },
@@ -35,6 +37,7 @@ export const mockOrders: Order[] = [
     statusLabel: 'NORMAL',
     elapsed: '03:20',
     elapsedSeconds: 200,
+    backendStatus: 'PENDING',
     items: [
       { qty: 1, name: 'Vegetarian Bowl', modifier: '+ Avocado' },
     ],
@@ -47,6 +50,7 @@ export const mockOrders: Order[] = [
     statusLabel: 'NEW ORDER',
     elapsed: '00:15',
     elapsedSeconds: 15,
+    backendStatus: 'PENDING',
     items: [
       { qty: 1, name: 'Pepperoni Pizza', modifier: 'Extra Crisp' },
       { qty: 2, name: 'Coca Cola' },
@@ -60,6 +64,7 @@ export const mockOrders: Order[] = [
     statusLabel: 'NEW ORDER',
     elapsed: '00:15',
     elapsedSeconds: 15,
+    backendStatus: 'PENDING',
     items: [
       { qty: 4, name: 'Pepperoni Pizza', modifier: 'Extra Crisp' },
       { qty: 2, name: 'Coca Cola' },
