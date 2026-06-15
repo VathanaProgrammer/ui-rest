@@ -89,7 +89,7 @@ export function useKDS() {
       try {
           const res = await api.get<any>('/orders');
           if (res.status === 1) {
-              const orders = res.data.filter((o: any) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED');
+              const orders = res.data.filter((o: any) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED' && o.status !== 'READY');
               activeOrders.value = orders.map((o: any) => mapBackendOrder(o));
           }
       } catch (e) {
