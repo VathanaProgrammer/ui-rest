@@ -37,8 +37,9 @@
 
     <!-- Footer -->
     <div class="card-footer">
-      <button class="btn-bump"  @click="$emit('bump',  order.id)">BUMP</button>
-      <button class="btn-ready" @click="$emit('ready', order.id)">READY</button>
+      <button v-if="order.backendStatus !== 'READY'" class="btn-bump"  @click="$emit('bump',  order.id)">BUMP</button>
+      <button v-else class="btn-bump" disabled style="opacity: 0.5; cursor: not-allowed;">BUMPED</button>
+      <button class="btn-ready" @click="$emit('ready', order.id)">DELIVER</button>
     </div>
   </div>
 </template>

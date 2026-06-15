@@ -1,5 +1,17 @@
 <template>
   <div class="kds-wrapper">
+    <!-- Header Controls -->
+    <div class="kds-controls">
+      <div class="control-group">
+        <label>Filter:</label>
+        <select v-model="currentFilter" class="kds-select">
+          <option value="ACTIVE">Pending (Cooking)</option>
+          <option value="READY">Ready (Finished)</option>
+          <option value="ALL">All Orders</option>
+        </select>
+      </div>
+    </div>
+
     <div class="kds-grid">
       <!-- Loading Skeleton -->
       <template v-if="loading">
@@ -43,7 +55,7 @@ import KDSCard from './KDSCard.vue';
 import Skeleton from '../ui/Skeleton.vue';
 import { useKDS } from './useKDS';
 
-const { activeOrders, bumpOrder, markReady, loading } = useKDS();
+const { activeOrders, currentFilter, bumpOrder, markReady, loading } = useKDS();
 </script>
 
 <style>
@@ -58,6 +70,40 @@ const { activeOrders, bumpOrder, markReady, loading } = useKDS();
   padding: 20px;
   box-sizing: border-box;
   font-family: 'Rajdhani', sans-serif;
+}
+
+.kds-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8a96a4;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.kds-select {
+  background: #161a1f;
+  border: 1px solid #252b33;
+  color: #dce6f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.kds-select:hover, .kds-select:focus {
+  border-color: #4da6ff;
 }
 
 .kds-grid {

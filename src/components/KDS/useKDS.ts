@@ -5,7 +5,18 @@ import { useApiStream } from '../../composables/useApiStream';
 import { useOrderAlert } from '../../composables/useOrderAlert';
 
 export function useKDS() {
-  const activeOrders = ref<Order[]>([]);
+  const allOrders = ref<Order[]>([]);
+  const currentFilter = ref<'ACTIVE' | 'READY' | 'ALL'>('ACTIVE');
+  
+  const activeOrders = computed(() => {
+      if (currentFilter.value === 'ACTIVE') {
+          return allOrders.value.filter(o => o.backendStatus !== 'READY');
+      } else if (currentFilter.value === 'READY') {
+          return allOrders.value.filter(o => o.backendStatus === 'READY');
+      }
+      return allOrders.value;
+  });
+
   const currentTime = ref('');
   const loading = ref(true);
 
@@ -48,7 +59,11 @@ export function useKDS() {
   };
 
   const tickTimers = () => {
-    activeOrders.value = activeOrders.value.map(order => {
+    allOrders.value = allOrders.value.map(order => {
+      if (order.backendStatus === 'READY') {
+          return order;
+      }
+
       const secs = order.elapsedSeconds + 1;
       
       const timeString = formatTime(secs);
@@ -66,13 +81,16 @@ export function useKDS() {
   const bumpOrder  = async (id: number) => { 
       try {
           await api.put(`/orders/${id}/status`, { status: 'READY' });
-          activeOrders.value = activeOrders.value.filter(o => o.id !== id); 
+          const index = allOrders.value.findIndex(o => o.id === id);
+          if (index !== -1) {
+              allOrders.value[index].backendStatus = 'READY';
+          }
       } catch(e) { console.error(e); }
   };
   const markReady  = async (id: number) => { 
       try {
           await api.put(`/orders/${id}/status`, { status: 'DELIVERED' });
-          activeOrders.value = activeOrders.value.filter(o => o.id !== id); 
+          allOrders.value = allOrders.value.filter(o => o.id !== id); 
       } catch(e) { console.error(e); }
   };
 
@@ -89,8 +107,8 @@ export function useKDS() {
       try {
           const res = await api.get<any>('/orders');
           if (res.status === 1) {
-              const orders = res.data.filter((o: any) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED' && o.status !== 'READY');
-              activeOrders.value = orders.map((o: any) => mapBackendOrder(o));
+              const orders = res.data.filter((o: any) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED');
+              allOrders.value = orders.map((o: any) => mapBackendOrder(o));
           }
       } catch (e) {
           console.error(e);
@@ -129,6 +147,7 @@ export function useKDS() {
           ...statusInfo,
           reservationTime: backendOrder.reservationTime,
           reservationEndTime: backendOrder.reservationEndTime,
+          backendStatus: backendOrder.status,
           items: backendOrder.items.map((i: any) => ({
               qty: i.quantity,
               name: i.menuItem?.name || 'Unknown',
@@ -142,23 +161,22 @@ export function useKDS() {
   connectStream({
     'NEW_ORDER': (event) => {
         const orderData = JSON.parse(event.data);
-        // Add new order to KDS if it's not already there
-        if (!activeOrders.value.find(o => o.id === orderData.id)) {
-            activeOrders.value.unshift(mapBackendOrder(orderData));
+        if (!allOrders.value.find(o => o.id === orderData.id)) {
+            allOrders.value.unshift(mapBackendOrder(orderData));
         }
     },
     'ORDER_STATUS_UPDATED': (event) => {
         const orderData = JSON.parse(event.data);
-        // Remove from KDS if it was marked as ready/delivered elsewhere
-        if (orderData.status === 'READY' || orderData.status === 'DELIVERED') {
-            activeOrders.value = activeOrders.value.filter(o => o.id !== orderData.id);
+        if (orderData.status === 'DELIVERED' || orderData.status === 'CANCELLED') {
+            allOrders.value = allOrders.value.filter(o => o.id !== orderData.id);
             return;
         }
         
-        // Otherwise update if we have it
-        const index = activeOrders.value.findIndex(o => o.id === orderData.id);
+        const index = allOrders.value.findIndex(o => o.id === orderData.id);
         if (index !== -1) {
-            activeOrders.value[index] = mapBackendOrder(orderData);
+            allOrders.value[index] = mapBackendOrder(orderData);
+        } else {
+            allOrders.value.unshift(mapBackendOrder(orderData));
         }
     }
   });
@@ -178,6 +196,7 @@ export function useKDS() {
 
   return {
     activeOrders,
+    currentFilter,
     currentTime,
     overdueCount,
     warningCount,

@@ -18,5 +18,6 @@ export interface Order {
   elapsedSeconds: number;
   reservationTime?: string;
   reservationEndTime?: string;
+  backendStatus: string;
   items: OrderItem[];
 }
