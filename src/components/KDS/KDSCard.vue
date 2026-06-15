@@ -15,6 +15,14 @@
       </div>
     </div>
 
+    <!-- Reservation Info -->
+    <div v-if="order.reservationTime" class="reservation-info">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="icon-clock">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>RESERVATION: {{ order.reservationTime }} {{ order.reservationEndTime ? '- ' + order.reservationEndTime : '' }}</span>
+    </div>
+
     <!-- Items -->
     <div class="card-body">
       <div v-for="(item, index) in order.items" :key="index" class="order-item">
@@ -119,6 +127,24 @@ defineEmits<{
 .status-label.warning { color: #e8a800; }
 .status-label.normal  { color: #3ecf80; }
 .status-label.new     { color: #4da6ff; }
+
+.status-label.new     { color: #4da6ff; }
+
+/* ── Reservation Info ── */
+.reservation-info {
+  padding: 0 16px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a96a4;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.icon-clock {
+  width: 14px;
+  height: 14px;
+}
 
 /* ── Card body ── */
 .card-body {

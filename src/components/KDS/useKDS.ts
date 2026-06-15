@@ -34,9 +34,18 @@ export function useKDS() {
   const tickTimers = () => {
     activeOrders.value = activeOrders.value.map(order => {
       const secs = order.elapsedSeconds + 1;
-      const m = String(Math.floor(secs / 60)).padStart(2, '0');
-      const s = String(secs % 60).padStart(2, '0');
-      return { ...order, elapsedSeconds: secs, elapsed: `${m}:${s}`, ...resolveStatus(secs) };
+      
+      const absSecs = Math.abs(secs);
+      const m = String(Math.floor(absSecs / 60)).padStart(2, '0');
+      const s = String(absSecs % 60).padStart(2, '0');
+      const timeString = secs < 0 ? `-${m}:${s}` : `${m}:${s}`;
+
+      let statusInfo = resolveStatus(secs);
+      if (secs < 0) {
+          statusInfo = { status: 'new', statusLabel: 'UPCOMING' };
+      }
+
+      return { ...order, elapsedSeconds: secs, elapsed: timeString, ...statusInfo };
     });
   };
 
@@ -79,18 +88,37 @@ export function useKDS() {
 
   const mapBackendOrder = (backendOrder: any): Order => {
       const created = new Date(backendOrder.createdAt);
+      let startTime = created;
       const now = new Date();
-      const secs = Math.floor((now.getTime() - created.getTime()) / 1000);
-      const m = String(Math.floor(secs / 60)).padStart(2, '0');
-      const s = String(secs % 60).padStart(2, '0');
+
+      if (backendOrder.reservationTime) {
+          const [hours, minutes] = backendOrder.reservationTime.split(':');
+          const resDate = new Date();
+          resDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+          startTime = resDate;
+      }
+
+      let secs = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+      
+      const absSecs = Math.abs(secs);
+      const m = String(Math.floor(absSecs / 60)).padStart(2, '0');
+      const s = String(absSecs % 60).padStart(2, '0');
+      const timeString = secs < 0 ? `-${m}:${s}` : `${m}:${s}`;
+
+      let statusInfo = resolveStatus(secs);
+      if (secs < 0) {
+          statusInfo = { status: 'new', statusLabel: 'UPCOMING' };
+      }
 
       return {
           id: backendOrder.id,
           ticket: backendOrder.tableNo || ('#' + backendOrder.id),
           type: backendOrder.orderType.toLowerCase().includes('take') ? 'takeout' : 'dine-in',
           elapsedSeconds: secs,
-          elapsed: `${m}:${s}`,
-          ...resolveStatus(secs),
+          elapsed: timeString,
+          ...statusInfo,
+          reservationTime: backendOrder.reservationTime,
+          reservationEndTime: backendOrder.reservationEndTime,
           items: backendOrder.items.map((i: any) => ({
               qty: i.quantity,
               name: i.menuItem?.name || 'Unknown',
