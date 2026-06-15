@@ -141,14 +141,14 @@ export function useKDS() {
       return {
           id: backendOrder.id,
           ticket: backendOrder.tableNo || ('#' + backendOrder.id),
-          type: backendOrder.orderType.toLowerCase().includes('take') ? 'takeout' : 'dine-in',
+          type: (backendOrder.orderType || '').toLowerCase().includes('take') ? 'takeout' : 'dine-in',
           elapsedSeconds: secs,
           elapsed: timeString,
           ...statusInfo,
           reservationTime: backendOrder.reservationTime,
           reservationEndTime: backendOrder.reservationEndTime,
           backendStatus: backendOrder.status,
-          items: backendOrder.items.map((i: any) => ({
+          items: (backendOrder.items || []).map((i: any) => ({
               qty: i.quantity,
               name: i.menuItem?.name || 'Unknown',
               modifier: i.modifiers
