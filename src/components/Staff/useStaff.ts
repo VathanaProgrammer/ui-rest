@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 import type { StaffMember, StaffStatus } from './types';
-import { mockStaff, staffStats, upcomingShifts, complianceAlerts } from './mockData';
+import { mockStaff, upcomingShifts, complianceAlerts } from './mockData';
 
 const PAGE_SIZE = 4;
 
@@ -52,7 +52,7 @@ export function useStaff() {
           email: u.emailAddress,
           phoneNumber: u.phoneNumber,
           avatar: getAvatarUrl(u.avatarUrl, u.displayName || u.fullName || 'User'),
-          status: u.currentStatus.toLowerCase(),
+          status: (u.currentStatus || 'OFF_DUTY').toLowerCase().replace('_', '-') as StaffStatus,
         }));
       }
     } catch(e) {
@@ -119,8 +119,15 @@ export function useStaff() {
     }
   };
 
+  const stats = computed(() => [
+    { label: 'Total Staff', value: allStaff.value.length, icon: '👥', trend: 'Live Data', trendUp: true },
+    { label: 'On Shift',    value: allStaff.value.filter(s => s.status === 'active').length, icon: '✅', trend: 'Live Data', trendUp: true },
+    { label: 'On Break',    value: allStaff.value.filter(s => s.status === 'on-break').length, icon: '☕', trend: 'Live Data', trendUp: false },
+    { label: 'Off Duty',    value: allStaff.value.filter(s => s.status === 'off-duty').length, icon: '🌙', trend: 'Live Data', trendUp: false },
+  ]);
+
   return {
-    stats: staffStats,
+    stats,
     upcomingShifts,
     complianceAlerts,
 
