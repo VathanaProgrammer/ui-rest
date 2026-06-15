@@ -6,7 +6,7 @@
         <label>Filter:</label>
         <select v-model="currentFilter" class="kds-select">
           <option value="ACTIVE">Pending (Cooking)</option>
-          <option value="READY">Ready (Finished)</option>
+          <option value="READY">Bumped (Waiting Delivery)</option>
           <option value="ALL">All Orders</option>
         </select>
       </div>
