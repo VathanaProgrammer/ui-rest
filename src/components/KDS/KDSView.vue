@@ -12,6 +12,14 @@
       </div>
     </div>
 
+    <!-- DEBUG BANNER -->
+    <div v-if="currentFilter === 'READY'" style="background-color: #f05050; color: white; padding: 12px; margin: 0 20px 20px 20px; border-radius: 8px; font-family: monospace; font-size: 14px;">
+      <b>DEBUG INFO:</b> Total Orders: {{ allOrders.length }} | 
+      READY: {{ allOrders.filter(o => o.backendStatus === 'READY').length }} |
+      PENDING: {{ allOrders.filter(o => o.backendStatus === 'PENDING').length }} |
+      DELIVERED: {{ allOrders.filter(o => o.backendStatus === 'DELIVERED').length }}
+    </div>
+
     <div class="kds-grid">
       <!-- Loading Skeleton -->
       <template v-if="loading">
@@ -55,7 +63,7 @@ import KDSCard from './KDSCard.vue';
 import Skeleton from '../ui/Skeleton.vue';
 import { useKDS } from './useKDS';
 
-const { activeOrders, currentFilter, bumpOrder, markReady, loading } = useKDS();
+const { allOrders, activeOrders, currentFilter, bumpOrder, markReady, loading } = useKDS();
 </script>
 
 <style>

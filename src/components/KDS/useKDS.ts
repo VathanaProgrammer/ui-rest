@@ -195,6 +195,7 @@ export function useKDS() {
   });
 
   return {
+    allOrders,
     activeOrders,
     currentFilter,
     currentTime,
