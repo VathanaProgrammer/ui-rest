@@ -119,12 +119,14 @@ export function useStaff() {
     }
   };
 
-  const stats = computed(() => [
-    { label: 'Total Staff', value: allStaff.value.length, icon: '👥', trend: 'Live Data', trendUp: true },
-    { label: 'On Shift',    value: allStaff.value.filter(s => s.status === 'active').length, icon: '✅', trend: 'Live Data', trendUp: true },
-    { label: 'On Break',    value: allStaff.value.filter(s => s.status === 'on-break').length, icon: '☕', trend: 'Live Data', trendUp: false },
-    { label: 'Off Duty',    value: allStaff.value.filter(s => s.status === 'off-duty').length, icon: '🌙', trend: 'Live Data', trendUp: false },
-  ]);
+  const stats = computed(() => ({
+    totalStaff: allStaff.value.length,
+    totalChange: 'Live Data',
+    clockedIn: allStaff.value.filter(s => s.status === 'active').length,
+    capacity: 'Active',
+    onBreak: allStaff.value.filter(s => s.status === 'on-break').length,
+    nextShift: 'Pending',
+  }));
 
   return {
     stats,

@@ -17,21 +17,7 @@ export interface MenuItem {
   image: string;
 }
 
-// Singleton state — shared across all components that call useTicket()
-const ticketItems = ref<TicketItem[]>([
-  {
-    id: 1,
-    name: 'Classic Double',
-    price: 14.50,
-    qty: 1,
-    modifiers: [
-      { label: 'Extra Bacon', price: 2.00, type: 'add' },
-      { label: 'No Onions', type: 'remove' },
-    ],
-  },
-  { id: 4, name: 'Truffle Fries', price: 8.00, qty: 2 },
-  { id: 5, name: 'Neon Old Fashioned', price: 13.00, qty: 1 },
-]);
+const ticketItems = ref<TicketItem[]>([]);
 
 const isPriority = ref(true);
 const orderType = ref<'dine-in' | 'takeout'>('dine-in');
@@ -67,8 +53,35 @@ export function useTicket() {
     ticketItems.value = [];
   }
 
-  function sendToKitchen() {
-    alert('Order sent to kitchen!');
+  async function sendToKitchen() {
+    if (ticketItems.value.length === 0) {
+      alert('Ticket is empty');
+      return;
+    }
+    
+    const payload = {
+      tableNo: '14', // Using a default table for now
+      orderType: orderType.value === 'dine-in' ? 'DINE_IN' : 'TAKEOUT',
+      customerName: 'Walk-in Customer',
+      customerPhone: '',
+      items: ticketItems.value.map(t => ({
+        menuItemId: Number(t.id),
+        quantity: t.qty,
+        modifiers: t.modifiers ? t.modifiers.map(m => m.label).join(', ') : ''
+      }))
+    };
+    
+    try {
+      const { api } = await import('../../../utils/api');
+      const res = await api.post<any>('/orders', payload);
+      if (res) {
+        alert('Order sent to kitchen!');
+        clearTicket();
+      }
+    } catch (err) {
+      console.error('Failed to send order to kitchen', err);
+      alert('Error sending order');
+    }
   }
 
   return {
