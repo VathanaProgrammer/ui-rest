@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue';
 import { api } from '../utils/api';
 import Skeleton from '../components/ui/Skeleton.vue';
 import { DollarSign, ShoppingBag, CheckCircle, TrendingUp } from 'lucide-vue-next';
+import VueApexCharts from "vue3-apexcharts";
+import type { ApexOptions } from 'apexcharts';
 
 interface AnalyticsData {
   totalRevenue: number;
@@ -26,6 +28,60 @@ const fetchAnalytics = async () => {
     loading.value = false;
   }
 };
+
+const chartOptions: ApexOptions = {
+  chart: {
+    type: 'area',
+    background: 'transparent',
+    toolbar: { show: false },
+    fontFamily: 'Inter, sans-serif'
+  },
+  theme: { mode: 'dark' },
+  colors: ['#3b82f6', '#10b981'], // Blue for revenue, emerald for orders
+  dataLabels: { enabled: false },
+  stroke: { curve: 'smooth', width: 3 },
+  xaxis: {
+    categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    labels: { style: { colors: '#94a3b8' } }
+  },
+  yaxis: [
+    {
+      title: { text: 'Revenue', style: { color: '#94a3b8' } },
+      labels: {
+        style: { colors: '#94a3b8' },
+        formatter: (val: number) => `$${val}`
+      }
+    },
+    {
+      opposite: true,
+      title: { text: 'Orders', style: { color: '#94a3b8' } },
+      labels: { style: { colors: '#94a3b8' } }
+    }
+  ],
+  grid: {
+    borderColor: '#334155',
+    strokeDashArray: 4,
+    yaxis: { lines: { show: true } }
+  },
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shadeIntensity: 1,
+      opacityFrom: 0.4,
+      opacityTo: 0.05,
+      stops: [0, 100]
+    }
+  },
+  legend: { show: true, position: 'top', horizontalAlign: 'right', labels: { colors: '#e2e8f0' } },
+  tooltip: { theme: 'dark' }
+};
+
+const chartSeries = [
+  { name: 'Revenue', data: [1250, 1800, 1500, 2100, 2800, 3400, 3100] },
+  { name: 'Orders', data: [45, 60, 52, 78, 105, 140, 125] }
+];
 
 onMounted(() => {
   fetchAnalytics();
@@ -78,12 +134,20 @@ onMounted(() => {
       </div>
     </div>
     
-    <div class="chart-placeholder mt-8">
-      <div class="metric-card h-[400px] flex flex-col items-center justify-center relative overflow-hidden group">
-        <div class="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-900/20 opacity-50"></div>
-        <TrendingUp class="w-16 h-16 text-slate-600 mb-4 z-10" />
-        <h3 class="text-xl font-bold text-slate-300 z-10">Sales Trends</h3>
-        <p class="text-slate-500 z-10">Detailed charting and item analytics coming soon.</p>
+    <div class="chart-container mt-8">
+      <div class="metric-card p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+              <TrendingUp class="w-5 h-5 text-indigo-400" />
+              7-Day Sales Trends
+            </h3>
+            <p class="text-slate-400 text-sm mt-1">Mock data for visual demonstration</p>
+          </div>
+        </div>
+        <div class="chart-wrapper w-full h-[400px]">
+          <VueApexCharts type="area" height="400" :options="chartOptions" :series="chartSeries" />
+        </div>
       </div>
     </div>
   </div>
