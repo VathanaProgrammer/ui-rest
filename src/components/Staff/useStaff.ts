@@ -51,6 +51,7 @@ export function useStaff() {
           name: u.displayName || u.fullName || 'Unknown',
           displayName: u.displayName,
           role: u.role ? u.role.roleName : 'Unknown',
+          roleId: u.role ? u.role.id : 0,
           shift: 'Morning', // mocked as not in DB
           shiftHours: '06:00 - 14:00',
           email: u.emailAddress,
@@ -118,7 +119,7 @@ export function useStaff() {
       const payload: Record<string, any> = {
         name: updated.name,
         displayName: updated.displayName,
-        role: ROLE_MAP_INVERSE[updated.role] || 0, // Need to map this correctly, but the API will just use the role ID
+        role: updated.roleId || 0,
         shift: updated.shift,
         email: updated.email,
         phoneNumber: updated.phoneNumber,
