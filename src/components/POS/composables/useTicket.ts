@@ -68,6 +68,7 @@ export function useTicket() {
       orderType: orderType.value === 'dine-in' ? 'DINE_IN' : 'TAKEOUT',
       customerName: 'Walk-in Customer',
       customerPhone: '',
+      ticketNote: ticketNote.value,
       items: ticketItems.value.map(t => ({
         menuItemId: Number(t.id),
         quantity: t.qty,
