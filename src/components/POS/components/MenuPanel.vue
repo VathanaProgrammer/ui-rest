@@ -27,7 +27,7 @@ const fetchMenuItems = async () => {
         const res = await api.get<any>('/menu-items');
         if (res.status === 1) {
             MENU_ITEMS.value = res.data
-                .filter((item: any) => item.status === 'AVAILABLE') // Only show available items in POS
+                .filter((item: any) => item.status === 'IN STOCK' || item.status === 'AVAILABLE') // Only show available items in POS
                 .map((item: any) => ({
                     id: item.id.toString(),
                     name: item.name,
