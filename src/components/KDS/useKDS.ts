@@ -148,6 +148,7 @@ export function useKDS() {
           reservationTime: backendOrder.reservationTime,
           reservationEndTime: backendOrder.reservationEndTime,
           backendStatus: backendOrder.status,
+          ticketNote: backendOrder.ticketNote,
           items: (backendOrder.items || []).map((i: any) => ({
               qty: i.quantity,
               name: i.menuItem?.name || 'Unknown',

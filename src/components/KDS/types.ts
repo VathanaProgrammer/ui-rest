@@ -19,5 +19,6 @@ export interface Order {
   reservationTime?: string;
   reservationEndTime?: string;
   backendStatus: string;
+  ticketNote?: string;
   items: OrderItem[];
 }
