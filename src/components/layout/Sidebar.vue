@@ -75,8 +75,8 @@ const filteredNavItems = navItems.filter(item => {
   return item.roles.includes(currentUserRole.toUpperCase());
 });
 
-const handleLogout = () => {
-  logout();
+const handleLogout = async () => {
+  await logout();
   router.push('/login');
 };
 </script>
