@@ -435,6 +435,7 @@ async function handleSubmit() {
     name:        form.name,
     displayName: form.displayName,
     role:        updatedRole,
+    roleId:      form.role,
     shift:       form.shift as StaffMember['shift'],
     email:       form.email,
     phoneNumber: form.phoneNumber,

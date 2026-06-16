@@ -7,6 +7,7 @@ export interface StaffMember {
   name: string;           // API: fullName
   displayName: string;    // API: displayName
   role: string;           // resolved role label e.g. "Manager"
+  roleId: number;         // exact ID from API
   status: StaffStatus;    // API: currentStatus (UPPER_SNAKE mapped to kebab)
   shift: ShiftName;
   shiftHours: string;     // e.g. "06:00 - 14:00"
