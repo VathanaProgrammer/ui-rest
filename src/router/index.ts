@@ -62,7 +62,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'menu-management',
         name: 'MenuManagement',
         component: () => import('../views/MenuManagementView.vue'),
-        meta: { roles: ['ADMIN', 'MANAGER'] }
+        meta: { roles: ['ADMIN', 'MANAGER', 'HEAD_CHEF'] }
       },
       {
         path: 'invoices',
