@@ -43,17 +43,20 @@ const routes: Array<RouteRecordRaw> = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('../views/DashboardView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
       {
         path: 'tables',
         name: 'Tables',
         component: () => import('../views/TablesView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER', 'WAITSTAFF', 'SERVER', 'CASHIER'] }
       },
       // POSView
       {
         path: 'pos',
         name: 'POS',
         component: () => import('../components/POS/POSView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER', 'WAITSTAFF', 'CASHIER'] }
       },
       {
         path: 'menu-management',
@@ -77,12 +80,13 @@ const routes: Array<RouteRecordRaw> = [
         path: 'kds',
         name: 'KDS',
         component: () => import('../components/KDS/KDSView.vue'),
-        meta: { roles: ['ADMIN', 'MANAGER', 'KITCHEN'] }
+        meta: { roles: ['ADMIN', 'MANAGER', 'HEAD_CHEF', 'KITCHEN', 'LINE_COOK'] }
       },
       {
         path: 'tracking',
         name: 'Tracking',
         component: () => import('../components/Tracking/TrackingView.vue'),
+        meta: { roles: ['ADMIN', 'MANAGER'] }
       },
       // StaffView
       {
@@ -153,8 +157,11 @@ router.beforeEach((
     // Redirect to login if trying to access protected route
     next('/login');
   } else if (to.path === '/login' && isAuthenticated()) {
-    // Redirect to dashboard if already logged in
-    next('/tables');
+    // Redirect to smart home page if already logged in
+    const role = userRole.value?.toUpperCase() || 'WAITSTAFF';
+    if (['ADMIN', 'MANAGER'].includes(role)) next('/dashboard');
+    else if (['HEAD_CHEF', 'KITCHEN', 'LINE_COOK'].includes(role)) next('/kds');
+    else next('/tables');
   } else if (requiresAuth && allowedRoles && userRole.value) {
     // Check if user has required role
     if (allowedRoles.includes(userRole.value.toUpperCase())) {
@@ -162,8 +169,11 @@ router.beforeEach((
     } else {
       // User doesn't have permission
       console.warn(`Access denied. User role ${userRole.value} cannot access ${to.path}`);
-      // Redirect to a safe page like tables (or a 403 page if you make one)
-      next('/tables'); 
+      // Redirect to smart home page
+      const role = userRole.value?.toUpperCase() || 'WAITSTAFF';
+      if (['ADMIN', 'MANAGER'].includes(role)) next('/dashboard');
+      else if (['HEAD_CHEF', 'KITCHEN', 'LINE_COOK'].includes(role)) next('/kds');
+      else next('/tables');
     }
   } else {
     next();
