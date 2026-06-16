@@ -21,6 +21,7 @@ const ticketItems = ref<TicketItem[]>([]);
 
 const isPriority = ref(true);
 const orderType = ref<'dine-in' | 'takeout'>('dine-in');
+const ticketNote = ref('');
 
 export function useTicket() {
   const subtotal = computed(() =>
@@ -51,6 +52,7 @@ export function useTicket() {
 
   function clearTicket() {
     ticketItems.value = [];
+    ticketNote.value = '';
   }
 
   async function sendToKitchen() {
@@ -88,6 +90,7 @@ export function useTicket() {
     ticketItems,
     isPriority,
     orderType,
+    ticketNote,
     subtotal,
     tax,
     total,

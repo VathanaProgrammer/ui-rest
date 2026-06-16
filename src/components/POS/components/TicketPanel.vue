@@ -10,10 +10,27 @@ const {
   subtotal,
   tax,
   total,
+  ticketNote,
   changeQty,
   clearTicket,
   sendToKitchen,
 } = useTicket();
+
+const handleAddNote = () => {
+  const note = prompt('Add ticket note (e.g., Allergy info):', ticketNote.value);
+  if (note !== null) {
+    ticketNote.value = note;
+  }
+};
+
+const handlePayLater = () => {
+  if (ticketItems.value.length === 0) {
+    alert('Ticket is empty. Add items first.');
+    return;
+  }
+  alert('Order saved! The customer will pay later.');
+  clearTicket();
+};
 </script>
 
 <template>
@@ -78,9 +95,13 @@ const {
     </div>
 
     <!-- Actions -->
+    <div v-if="ticketNote" class="ticket-note">
+      <strong>Note:</strong> {{ ticketNote }}
+    </div>
+
     <div class="ticket-actions">
-      <button class="btn-secondary">Pay Later</button>
-      <button class="btn-secondary">
+      <button class="btn-secondary" @click="handlePayLater">Pay Later</button>
+      <button class="btn-secondary" @click="handleAddNote">
         <StickyNote class="w-4 h-4" /> Add Note
       </button>
     </div>
@@ -254,4 +275,13 @@ const {
   letter-spacing: 0.02em;
 }
 .btn-send:hover { background: #1d4ed8; }
+.ticket-note {
+  background: rgba(234, 179, 8, 0.1);
+  color: #eab308;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+}
 </style>
