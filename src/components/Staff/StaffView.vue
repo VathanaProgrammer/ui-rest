@@ -3,7 +3,7 @@
 
     <div class="page-header">
       <div>
-        <h1 class="page-title">Team Members</h1>
+        <h1 class="page-title">Team Members (Owner)</h1>
         <p class="page-subtitle">Manage your kitchen staff, shifts, and real-time statuses.</p>
       </div>
       <button class="btn-add-staff" @click="showAddModal = true">
