@@ -29,6 +29,7 @@ const ROLE_MAP_INVERSE: Record<string, number> = Object.fromEntries(
 const getAvatarUrl = (url: string, name: string) => {
   if (!url) return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&size=64`;
   if (url.startsWith('http')) return url;
+  if (url.startsWith('/assets/')) return url; // Frontend assets
   return import.meta.env.VITE_API_BASE_URL.replace('/api', '') + url;
 };
 
