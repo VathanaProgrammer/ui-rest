@@ -57,7 +57,9 @@ export function useTicket() {
 
   async function sendToKitchen() {
     if (ticketItems.value.length === 0) {
-      alert('Ticket is empty');
+      import('../../../composables/useOrderAlert').then(({ useOrderAlert }) => {
+        useOrderAlert().showAlert({ title: 'Ticket Empty', orderName: 'Add items before sending.', playSound: false }, 3000);
+      });
       return;
     }
     
@@ -77,12 +79,16 @@ export function useTicket() {
       const { api } = await import('../../../utils/api');
       const res = await api.post<any>('/orders', payload);
       if (res) {
-        alert('Order sent to kitchen!');
+        import('../../../composables/useOrderAlert').then(({ useOrderAlert }) => {
+          useOrderAlert().showAlert({ title: 'Order Sent', orderName: 'Ticket sent to kitchen successfully.', playSound: false }, 3000);
+        });
         clearTicket();
       }
     } catch (err) {
       console.error('Failed to send order to kitchen', err);
-      alert('Error sending order');
+      import('../../../composables/useOrderAlert').then(({ useOrderAlert }) => {
+        useOrderAlert().showAlert({ title: 'Error', orderName: 'Failed to send order to kitchen.', playSound: false }, 4000);
+      });
     }
   }
 

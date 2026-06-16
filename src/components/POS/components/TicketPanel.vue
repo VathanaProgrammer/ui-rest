@@ -16,6 +16,9 @@ const {
   sendToKitchen,
 } = useTicket();
 
+import { useOrderAlert } from '../../../composables/useOrderAlert';
+const { showAlert } = useOrderAlert();
+
 const handleAddNote = () => {
   const note = prompt('Add ticket note (e.g., Allergy info):', ticketNote.value);
   if (note !== null) {
@@ -25,10 +28,10 @@ const handleAddNote = () => {
 
 const handlePayLater = () => {
   if (ticketItems.value.length === 0) {
-    alert('Ticket is empty. Add items first.');
+    showAlert({ title: 'Ticket is empty', orderName: 'Add items first before saving.', playSound: false }, 3000);
     return;
   }
-  alert('Order saved! The customer will pay later.');
+  showAlert({ title: 'Order Saved', orderName: 'Ticket saved! Customer will pay later.', playSound: false }, 4000);
   clearTicket();
 };
 </script>
